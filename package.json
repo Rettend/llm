@@ -1,6 +1,7 @@
 {
   "name": "@rttnd/llm",
   "version": "0.0.0",
+  "description": "LLM Registry API",
   "module": "src/index.js",
   "publishConfig": {
     "access": "public"
