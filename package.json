@@ -1,0 +1,27 @@
+{
+  "name": "@rttnd/llm",
+  "version": "0.0.0",
+  "module": "src/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "lint": "eslint . --fix",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "bumpp && bun run build && npm publish",
+    "update": "taze -wr latest"
+  },
+  "dependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20251027.1",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.1.0",
+    "@elysiajs/cors": "^1.4.0",
+    "@types/bun": "latest",
+    "bumpp": "^10.3.1",
+    "eslint": "^9.38.0",
+    "taze": "^19.8.1"
+  }
+}
