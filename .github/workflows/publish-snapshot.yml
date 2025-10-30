@@ -4,7 +4,7 @@ on:
   schedule:
     # Run daily at 3 AM UTC (1 hour after cron job updates the manifest)
     - cron: '0 3 * * *'
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -20,7 +20,7 @@ jobs:
         id: fetch
         run: |
           # Replace with your deployed API endpoint
-          API_ENDPOINT="${{ vars.API_ENDPOINT || 'https://llm-registry.yourusername.workers.dev' }}"
+          API_ENDPOINT="${{ vars.API_ENDPOINT }}"
           
           echo "Fetching manifest from $API_ENDPOINT/v1/manifest"
           curl -f -o manifest.json "$API_ENDPOINT/v1/manifest"
