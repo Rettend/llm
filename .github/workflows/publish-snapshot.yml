@@ -31,14 +31,13 @@ jobs:
 
       - name: Transform manifest to public snapshots
         run: |
-          # Create public directory if it doesn't exist
           mkdir -p public
           
           # Extract providers
-          jq '.providers' manifest.json > public/providers.json
+          jq -r '.providers | "[\n  " + (map(@json) | join(",\n  ")) + "\n]"' manifest.json > public/providers.json
           
-          # Extract models (minimal fields for public consumption)
-          jq '[.models[] | {
+          # Extract models
+          jq -r '[.models[] | {
             provider: .provider,
             value: .value,
             name: .name,
@@ -47,7 +46,7 @@ jobs:
             speed: .speed,
             pricing: .pricing.blended,
             status: .status
-          }]' manifest.json > public/models.json
+          }] | "[\n  " + (map(@json) | join(",\n  ")) + "\n]"' manifest.json > public/models.json
           
           # Create a version file
           jq '{

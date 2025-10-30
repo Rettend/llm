@@ -2,6 +2,7 @@ name = "llm-registry"
 main = "packages/server/src/index.ts"
 compatibility_date = "2025-06-01"
 keep_vars = true
+routes = [ { pattern = "llm.rettend.me", custom_domain = true } ]
 
 [[kv_namespaces]]
 binding = "REGISTRY"
