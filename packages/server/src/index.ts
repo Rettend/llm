@@ -11,7 +11,7 @@ function getAllowedOrigin(request: Request): boolean {
   if (!origin)
     return false
 
-  const allowed = env.ALLOWED_ORIGINS?.split(',').map((o: string) => o.trim()) ?? []
+  const allowed = env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) ?? []
 
   for (const pattern of allowed) {
     if (pattern === origin)

@@ -1,11 +1,12 @@
 /// <reference types="@cloudflare/workers-types" />
 
-interface Env {
-  AA_API_KEY: string
-  REGISTRY: KVNamespace
-  ALLOWED_ORIGINS?: string
-}
+declare namespace Cloudflare {
+  interface Env {
+    /** API key for Artificial Analysis */
+    AA_API_KEY: string
+    /** Optional comma-separated list of allowed origins for CORS */
+    ALLOWED_ORIGINS?: string
 
-declare module 'cloudflare:workers' {
-  export const env: Env
+    REGISTRY: KVNamespace
+  }
 }

@@ -14,7 +14,7 @@ export interface Model {
   name: string // Display name
   alias?: string // Short name for dropdowns
 
-  // Capabilities (populated from capabilities mapping)
+  // Capabilities
   capabilities?: {
     text?: boolean
     vision?: boolean
@@ -28,7 +28,7 @@ export interface Model {
   iq?: 0 | 1 | 2 | 3 | 4 | 5 // Derived from AA intelligence index
   speed?: 0 | 1 | 2 | 3 | 4 | 5 // Derived from AA output tokens/sec
 
-  // Metrics (raw data from AA)
+  // Metrics
   metrics?: {
     contextWindow?: number // From capabilities mapping
     intelligenceIndex?: number

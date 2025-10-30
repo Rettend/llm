@@ -15,7 +15,7 @@
     "lint": "eslint . --fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "probe": "bun run scripts/probe=.ts",
+    "probe": "bun run scripts/probe.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
     "update": "taze -wr latest"
   },
