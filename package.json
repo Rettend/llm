@@ -1,28 +1,40 @@
 {
-  "name": "@rttnd/llm",
+  "name": "@rttnd/llm-monorepo",
   "version": "0.0.0",
-  "description": "LLM Registry API",
-  "module": "src/index.js",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
+  "packageManager": "bun@1.3.1",
+  "description": "LLM Registry Monorepo",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
+    "dev": "bun run --cwd packages/server dev",
+    "deploy": "bun run --cwd packages/server deploy",
+    "cf:dev": "bun run --cwd packages/server cf:dev",
+    "cf:tail": "bun run --cwd packages/server cf:tail",
     "lint": "eslint . --fix",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "release": "bumpp && bun run build && npm publish",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "probe": "bun run scripts/probe=.ts",
+    "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
     "update": "taze -wr latest"
   },
-  "dependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20251027.1",
-    "elysia": "latest"
-  },
   "devDependencies": {
+    "@ai-sdk/anthropic": "^2.0.39",
+    "@ai-sdk/azure": "^2.0.59",
+    "@ai-sdk/cerebras": "^1.0.27",
+    "@ai-sdk/google": "^2.0.25",
+    "@ai-sdk/groq": "^2.0.26",
+    "@ai-sdk/openai": "^2.0.58",
+    "@ai-sdk/xai": "^2.0.29",
     "@antfu/eslint-config": "^6.1.0",
-    "@elysiajs/cors": "^1.4.0",
+    "@openrouter/ai-sdk-provider": "^1.2.0",
     "@types/bun": "latest",
+    "@typescript/native-preview": "^7.0.0-dev.20251030.1",
+    "ai": "^5.0.82",
     "bumpp": "^10.3.1",
     "eslint": "^9.38.0",
-    "taze": "^19.8.1"
+    "taze": "^19.9.0",
+    "zod": "^4.1.12"
   }
 }

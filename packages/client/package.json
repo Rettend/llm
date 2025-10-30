@@ -1,0 +1,23 @@
+{
+  "name": "@rttnd/llm",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "LLM Registry Client Library",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@rttnd/llm-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@typescript/native-preview": "^7.0.0-dev.20251030.1"
+  }
+}

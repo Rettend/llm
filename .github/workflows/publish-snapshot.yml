@@ -1,0 +1,78 @@
+name: Publish Registry Snapshot
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC (1 hour after cron job updates the manifest)
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch manifest from API
+        id: fetch
+        run: |
+          # Replace with your deployed API endpoint
+          API_ENDPOINT="${{ vars.API_ENDPOINT || 'https://llm-registry.yourusername.workers.dev' }}"
+          
+          echo "Fetching manifest from $API_ENDPOINT/v1/manifest"
+          curl -f -o manifest.json "$API_ENDPOINT/v1/manifest"
+          
+          # Extract version for commit message
+          VERSION=$(jq -r '.version' manifest.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Transform manifest to public snapshots
+        run: |
+          # Create public directory if it doesn't exist
+          mkdir -p public
+          
+          # Extract providers
+          jq '.providers' manifest.json > public/providers.json
+          
+          # Extract models (minimal fields for public consumption)
+          jq '[.models[] | {
+            provider: .provider,
+            value: .value,
+            name: .name,
+            alias: .alias,
+            iq: .iq,
+            speed: .speed,
+            pricing: .pricing.blended,
+            status: .status
+          }]' manifest.json > public/models.json
+          
+          # Create a version file
+          jq '{
+            version: .version,
+            generatedAt: .generatedAt,
+            providers: (.providers | length),
+            models: (.models | length)
+          }' manifest.json > public/version.json
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add public/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected"
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update registry snapshot to ${{ steps.fetch.outputs.version }}"
+          git push

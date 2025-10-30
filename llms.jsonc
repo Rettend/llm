@@ -1,0 +1,233 @@
+// curl -X GET https://artificialanalysis.ai/api/v2/data/llms/models -H "x-api-key: env.AA_API_KEY" > llms.jsonc
+// Response Fields
+// Field  Type  Description
+// id  string  Unique identifier (stable)
+// name  string  Full name (may change)
+// slug  string  URL-friendly identifier (infrequently changed)
+// model_creator  object  Creator information (id, name, slug)
+// evaluations  object  Benchmark scores
+// pricing  object  Price per million tokens ($USD)
+// median_output_tokens_per_second  number  Output generation speed (tokens per second)
+// median_time_to_first_token_seconds  number  Time to first token (seconds)
+// median_time_to_first_answer_token  number  Time to first answer token (seconds, different from time to first token for reasoning models which share reasoning tokens)
+{
+  "data": [
+    {
+      "id": "36f73aaf-d38a-4b56-a2b3-d04d17186910",
+      "name": "gpt-oss-20B (high)",
+      "slug": "gpt-oss-20b",
+      "release_date": "2025-08-05",
+      "model_creator": {
+        "id": "e67e56e3-15cd-43db-b679-da4660a69f41",
+        "name": "OpenAI",
+        "slug": "openai"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 52.4,
+        "artificial_analysis_coding_index": 40.7,
+        "artificial_analysis_math_index": 89.3,
+        "mmlu_pro": 0.748,
+        "gpqa": 0.688,
+        "hle": 0.098,
+        "livecodebench": 0.777,
+        "scicode": 0.344,
+        "math_500": null,
+        "aime": null,
+        "aime_25": 0.893,
+        "ifbench": 0.651,
+        "lcr": 0.343,
+        "terminalbench_hard": 0.099,
+        "tau2": 0.602
+      },
+      "pricing": {
+        "price_1m_blended_3_to_1": 0.094,
+        "price_1m_input_tokens": 0.06,
+        "price_1m_output_tokens": 0.2
+      },
+      "median_output_tokens_per_second": 256.045,
+      "median_time_to_first_token_seconds": 0.273,
+      "median_time_to_first_answer_token": 8.085
+    },
+    {
+      "id": "f0083258-8646-45b8-8082-7aaf6c2ea82a",
+      "name": "gpt-oss-120B (high)",
+      "slug": "gpt-oss-120b",
+      "release_date": "2025-08-05",
+      "model_creator": {
+        "id": "e67e56e3-15cd-43db-b679-da4660a69f41",
+        "name": "OpenAI",
+        "slug": "openai"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 58,
+        "artificial_analysis_coding_index": 41.2,
+        "artificial_analysis_math_index": 93.4,
+        "mmlu_pro": 0.808,
+        "gpqa": 0.782,
+        "hle": 0.185,
+        "livecodebench": 0.653,
+        "scicode": 0.362,
+        "math_500": null,
+        "aime": null,
+        "aime_25": 0.934,
+        "ifbench": 0.69,
+        "lcr": 0.507,
+        "terminalbench_hard": 0.22,
+        "tau2": 0.658
+      },
+      "pricing": {
+        "price_1m_blended_3_to_1": 0.263,
+        "price_1m_input_tokens": 0.15,
+        "price_1m_output_tokens": 0.6
+      },
+      "median_output_tokens_per_second": 341.557,
+      "median_time_to_first_token_seconds": 0.386,
+      "median_time_to_first_answer_token": 6.241
+    },
+    {
+      "id": "c3738fb0-3408-4430-a699-760ae4b70c93",
+      "name": "GPT-5 (minimal)",
+      "slug": "gpt-5-minimal",
+      "release_date": "2025-08-07",
+      "model_creator": {
+        "id": "e67e56e3-15cd-43db-b679-da4660a69f41",
+        "name": "OpenAI",
+        "slug": "openai"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 43.5,
+        "artificial_analysis_coding_index": 37.4,
+        "artificial_analysis_math_index": 31.7,
+        "mmlu_pro": 0.806,
+        "gpqa": 0.673,
+        "hle": 0.054,
+        "livecodebench": 0.558,
+        "scicode": 0.388,
+        "math_500": 0.861,
+        "aime": 0.367,
+        "aime_25": 0.317,
+        "ifbench": 0.456,
+        "lcr": 0.25,
+        "terminalbench_hard": 0.177,
+        "tau2": 0.67
+      },
+      "pricing": {
+        "price_1m_blended_3_to_1": 3.438,
+        "price_1m_input_tokens": 1.25,
+        "price_1m_output_tokens": 10
+      },
+      "median_output_tokens_per_second": 107.33,
+      "median_time_to_first_token_seconds": 1.311,
+      "median_time_to_first_answer_token": 1.311
+    },
+    {
+      "id": "5d11e7a1-4f70-4e5a-9364-e193761d6757",
+      "name": "GPT-5 Codex (high)",
+      "slug": "gpt-5-codex",
+      "release_date": "2025-09-23",
+      "model_creator": {
+        "id": "e67e56e3-15cd-43db-b679-da4660a69f41",
+        "name": "OpenAI",
+        "slug": "openai"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 68.5,
+        "artificial_analysis_coding_index": 53.5,
+        "artificial_analysis_math_index": 98.7,
+        "mmlu_pro": 0.865,
+        "gpqa": 0.837,
+        "hle": 0.256,
+        "livecodebench": 0.84,
+        "scicode": 0.409,
+        "math_500": null,
+        "aime": null,
+        "aime_25": 0.987,
+        "ifbench": 0.741,
+        "lcr": 0.69,
+        "terminalbench_hard": 0.355,
+        "tau2": 0.868
+      },
+      "pricing": {
+        "price_1m_blended_3_to_1": 3.438,
+        "price_1m_input_tokens": 1.25,
+        "price_1m_output_tokens": 10
+      },
+      "median_output_tokens_per_second": 160.991,
+      "median_time_to_first_token_seconds": 23.853,
+      "median_time_to_first_answer_token": 23.853
+    },
+    {
+      "id": "bc26bfdb-4923-4442-a6ca-e77392923581",
+      "name": "GPT-5 mini (minimal)",
+      "slug": "gpt-5-mini-minimal",
+      "release_date": "2025-08-07",
+      "model_creator": {
+        "id": "e67e56e3-15cd-43db-b679-da4660a69f41",
+        "name": "OpenAI",
+        "slug": "openai"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 41.6,
+        "artificial_analysis_coding_index": 35,
+        "artificial_analysis_math_index": 46.7,
+        "mmlu_pro": 0.775,
+        "gpqa": 0.687,
+        "hle": 0.05,
+        "livecodebench": 0.545,
+        "scicode": 0.369,
+        "math_500": null,
+        "aime": null,
+        "aime_25": 0.467,
+        "ifbench": 0.456,
+        "lcr": 0.357,
+        "terminalbench_hard": 0.135,
+        "tau2": 0.319
+      },
+      "pricing": {
+        "price_1m_blended_3_to_1": 0.688,
+        "price_1m_input_tokens": 0.25,
+        "price_1m_output_tokens": 2
+      },
+      "median_output_tokens_per_second": 66.851,
+      "median_time_to_first_token_seconds": 1.186,
+      "median_time_to_first_answer_token": 1.186
+    },
+    {
+      "id": "48e50f00-1fd1-4acc-b337-61078aa341e6",
+      "name": "GPT-5 (high)",
+      "slug": "gpt-5",
+      "release_date": "2025-08-07",
+      "model_creator": {
+        "id": "e67e56e3-15cd-43db-b679-da4660a69f41",
+        "name": "OpenAI",
+        "slug": "openai"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 68.5,
+        "artificial_analysis_coding_index": 52.7,
+        "artificial_analysis_math_index": 94.3,
+        "mmlu_pro": 0.871,
+        "gpqa": 0.854,
+        "hle": 0.265,
+        "livecodebench": 0.846,
+        "scicode": 0.429,
+        "math_500": 0.994,
+        "aime": 0.957,
+        "aime_25": 0.943,
+        "ifbench": 0.731,
+        "lcr": 0.756,
+        "terminalbench_hard": 0.305,
+        "tau2": 0.848
+      },
+      "pricing": {
+        "price_1m_blended_3_to_1": 3.438,
+        "price_1m_input_tokens": 1.25,
+        "price_1m_output_tokens": 10
+      },
+      "median_output_tokens_per_second": 116.731,
+      "median_time_to_first_token_seconds": 71.495,
+      "median_time_to_first_answer_token": 71.495
+    }
+    // ... more entries ...
+  ]
+}

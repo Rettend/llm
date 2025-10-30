@@ -1,0 +1,11 @@
+name = "llm-registry"
+main = "packages/server/src/index.ts"
+compatibility_date = "2025-06-01"
+keep_vars = true
+
+[[kv_namespaces]]
+binding = "REGISTRY"
+id = "your-kv-namespace-id-here"
+
+[triggers]
+crons = [ "0 2 * * *" ]

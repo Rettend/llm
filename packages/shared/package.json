@@ -1,0 +1,15 @@
+{
+  "name": "@rttnd/llm-shared",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared types and data for LLM Registry",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./capabilities": "./src/capabilities.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit"
+  }
+}
