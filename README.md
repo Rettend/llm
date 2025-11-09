@@ -19,21 +19,21 @@ bun add @rttnd/llm
 ```typescript
 import { createRegistry } from '@rttnd/llm'
 
-const client = createRegistry({
+const registry = createRegistry({
   baseUrl: 'https://llm-registry.your-subdomain.workers.dev',
 })
 
 // Get all models
-const { data: models } = await client.getModels()
+const { data: models } = await registry.getModels()
 
 // Search for models
-const { data: visionModels } = await client.searchModels({
+const { data: visionModels } = await registry.searchModels({
   capability: 'vision',
   minIq: 3,
 })
 
 // Get specific model details
-const { data: model } = await client.getModel('openai', 'gpt-5')
+const { data: model } = await registry.getModel('openai', 'gpt-5')
 ```
 
 See the [Client Library Documentation](./packages/client/README.md) for more details.
