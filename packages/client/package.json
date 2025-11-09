@@ -11,6 +11,7 @@
     "access": "public"
   },
   "scripts": {
+    "build": "tsdown",
     "check": "tsgo --noEmit",
     "test": "vitest"
   },

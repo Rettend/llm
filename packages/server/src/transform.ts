@@ -1,6 +1,5 @@
 import type { AAModel, AAResponse, Manifest, Model, Provider } from '@rttnd/llm-shared'
-import { Buffer } from 'node:buffer'
-import { getModelCapabilities } from '@rttnd/llm-shared'
+import { getModelCapabilities } from '@rttnd/llm-shared/capabilities'
 import { scoreIq, scoreSpeed } from './scoring'
 
 const PROVIDER_MAP: Record<string, { value: string, name: string, keyPlaceholder?: string, website?: string }> = {
@@ -52,24 +51,9 @@ function getProviderValue(creatorSlug: string): string {
   return PROVIDER_MAP[creatorSlug]?.value ?? creatorSlug
 }
 
-function normalizeModelValue(aaModel: AAModel): string {
-  // Extract model identifier from name or slug
-  // TODO: This is a simple heuristic - you may need to refine this
-  const name = (aaModel.name ?? '').toLowerCase()
-
-  // Handle special cases
-  if (name.includes('gpt-oss'))
-    return name.split(' ')[0] || aaModel.slug // e.g., "gpt-oss-20b"
-  if (name.includes('gpt-5'))
-    return name.split(' ')[0] || aaModel.slug // e.g., "gpt-5"
-
-  // Default to slug
-  return aaModel.slug
-}
-
 function transformAAModel(aaModel: AAModel): Model {
   const provider = getProviderValue(aaModel.model_creator.slug)
-  const value = normalizeModelValue(aaModel)
+  const value = aaModel.slug
 
   const capabilitiesData = getModelCapabilities(provider, value)
 
@@ -80,7 +64,7 @@ function transformAAModel(aaModel: AAModel): Model {
     value,
     provider,
     name: aaModel.name,
-    alias: baseName.split('(')[0]?.trim(), // Remove parenthetical suffixes
+    alias: baseName.split('(')[0]?.trim(),
 
     capabilities: capabilitiesData?.capabilities,
 
@@ -105,6 +89,60 @@ function transformAAModel(aaModel: AAModel): Model {
   }
 }
 
+function sortModels(models: Model[]): Model[] {
+  return [...models].sort((a, b) => {
+    if (a.provider === b.provider)
+      return a.value.localeCompare(b.value)
+
+    return a.provider.localeCompare(b.provider)
+  })
+}
+
+function sortProviders(providers: Provider[]): Provider[] {
+  return [...providers].sort((a, b) => a.name.localeCompare(b.name))
+}
+
+function toCanonicalManifest(providers: Provider[], models: Model[]): { providers: Provider[], models: Model[] } {
+  const canonicalProviders = providers.map(provider => ({ ...provider }))
+  const canonicalModels = models.map(model => ({
+    ...model,
+    capabilities: model.capabilities ? { ...model.capabilities } : undefined,
+    metrics: model.metrics ? { ...model.metrics } : undefined,
+    pricing: model.pricing ? { ...model.pricing } : undefined,
+    config: model.config ? { ...model.config } : undefined,
+  }))
+
+  return {
+    providers: sortProviders(canonicalProviders),
+    models: sortModels(canonicalModels),
+  }
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(input)
+
+  if (typeof crypto !== 'undefined' && typeof crypto.subtle !== 'undefined') {
+    const digest = await crypto.subtle.digest('SHA-256', data)
+    return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('')
+  }
+
+  const { createHash } = await import('node:crypto')
+  return createHash('sha256').update(data).digest('hex')
+}
+
+async function createManifestTags(providers: Provider[], models: Model[]): Promise<{ etag: string, version: string }> {
+  const canonical = toCanonicalManifest(providers, models)
+  const json = JSON.stringify(canonical)
+  const fullHash = await sha256Hex(json)
+  const shortHash = fullHash.slice(0, 32)
+
+  return {
+    etag: `"${shortHash}"`,
+    version: `v1.${shortHash.slice(0, 12)}`,
+  }
+}
+
 export async function fetchAndTransformManifest(apiKey: string): Promise<Manifest> {
   const response = await fetch('https://artificialanalysis.ai/api/v2/data/llms/models', {
     headers: {
@@ -122,7 +160,7 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
   const providerSet = new Set<string>()
   models.forEach(m => providerSet.add(m.provider))
 
-  const providers: Provider[] = Array.from(providerSet)
+  const providerList: Provider[] = Array.from(providerSet)
     .map((value) => {
       const mapped = PROVIDER_MAP[value]
       return {
@@ -133,17 +171,17 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
         status: 'active' as const,
       }
     })
-    .sort((a, b) => a.name.localeCompare(b.name))
+  const sortedProviders = sortProviders(providerList)
+  const sortedModels = sortModels(models)
 
   const generatedAt = new Date().toISOString()
-  const version = `v1.${Date.now()}`
-  const etag = `W/"${Buffer.from(version).toString('base64')}"`
+  const { etag, version } = await createManifestTags(sortedProviders, sortedModels)
 
   return {
     version,
     etag,
     generatedAt,
-    providers,
-    models,
+    providers: sortedProviders,
+    models: sortedModels,
   }
 }

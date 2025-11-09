@@ -11,6 +11,6 @@
     "./search": "./src/search.ts"
   },
   "scripts": {
-    "typecheck": "tsgo --noEmit"
+    "check": "tsgo --noEmit"
   }
 }

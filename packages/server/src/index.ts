@@ -1,53 +1,10 @@
-import type { Manifest, ModelSearchQuery } from '@rttnd/llm-shared'
+import type { ModelSearchQuery } from '@rttnd/llm-shared'
 import { cors } from '@elysiajs/cors'
 import { filterModels } from '@rttnd/llm-shared'
-import { env } from 'cloudflare:workers'
 import { Elysia, t } from 'elysia'
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker'
 import { healthSchema, manifestSchema, modelSchema, modelSearchQuerySchema, providerSchema, versionSchema } from './schema'
-
-const CACHE_HEADER = 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800'
-
-function getAllowedOrigin(request: Request): boolean {
-  const origin = request.headers.get('origin')
-  if (!origin)
-    return false
-
-  const allowed = env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) ?? []
-
-  for (const pattern of allowed) {
-    if (pattern === origin)
-      return true
-
-    if (pattern.startsWith('*.')) {
-      const domain = pattern.slice(2)
-      if (origin.endsWith(domain))
-        return true
-    }
-  }
-
-  return false
-}
-
-async function loadManifest(): Promise<Manifest> {
-  const cached = await env.REGISTRY.get('manifest', 'text')
-
-  if (!cached)
-    throw new Error('Manifest not found in KV storage')
-
-  return JSON.parse(cached)
-}
-
-function parseScore(value?: string): number | undefined {
-  if (!value)
-    return undefined
-
-  const parsed = Number(value)
-  if (Number.isNaN(parsed))
-    return undefined
-
-  return parsed
-}
+import { applyCachingHeaders, getAllowedOrigin, handleConditionalRequest, loadManifest, parseScore } from './utils'
 
 export const app = new Elysia({
   adapter: CloudflareAdapter,
@@ -60,16 +17,8 @@ export const app = new Elysia({
   .get('/v1/manifest', async ({ set, headers }) => {
     const manifest = await loadManifest()
 
-    const etag = manifest.etag
-    if (headers['if-none-match'] === etag) {
-      set.status = 304
-      set.headers['cache-control'] = CACHE_HEADER
-      set.headers.etag = etag
+    if (handleConditionalRequest(headers, set, manifest.etag))
       return
-    }
-
-    set.headers['cache-control'] = CACHE_HEADER
-    set.headers.etag = etag
 
     return manifest
   }, {
@@ -79,20 +28,24 @@ export const app = new Elysia({
     },
   })
 
-  .get('/v1/providers', async ({ set }) => {
+  .get('/v1/providers', async ({ set, headers }) => {
     const manifest = await loadManifest()
 
-    set.headers['cache-control'] = CACHE_HEADER
+    if (handleConditionalRequest(headers, set, manifest.etag))
+      return
 
     return manifest.providers
   }, {
-    response: t.Array(providerSchema),
+    response: {
+      200: t.Array(providerSchema),
+      304: t.Void(),
+    },
   })
 
   .get('/v1/models/search', async ({ query, set }) => {
     const manifest = await loadManifest()
 
-    set.headers['cache-control'] = CACHE_HEADER
+    applyCachingHeaders(set, manifest.etag)
 
     const searchQuery: ModelSearchQuery = {
       name: query.name,
@@ -108,27 +61,36 @@ export const app = new Elysia({
     response: t.Array(modelSchema),
   })
 
-  .get('/v1/providers/:providerId/models', async ({ params, set }) => {
+  .get('/v1/providers/:providerId/models', async ({ params, set, headers }) => {
     const manifest = await loadManifest()
 
-    set.headers['cache-control'] = CACHE_HEADER
+    if (handleConditionalRequest(headers, set, manifest.etag))
+      return
 
     return manifest.models.filter(model => model.provider === params.providerId)
   }, {
     params: t.Object({
       providerId: t.String(),
     }),
-    response: t.Array(modelSchema),
+    response: {
+      200: t.Array(modelSchema),
+      304: t.Void(),
+    },
   })
 
-  .get('/v1/version', async ({ set }) => {
-    const { version, etag, generatedAt } = await loadManifest()
+  .get('/v1/version', async ({ set, headers }) => {
+    const manifest = await loadManifest()
 
-    set.headers['cache-control'] = CACHE_HEADER
+    if (handleConditionalRequest(headers, set, manifest.etag))
+      return
 
+    const { version, etag, generatedAt } = manifest
     return { version, etag, generatedAt }
   }, {
-    response: versionSchema,
+    response: {
+      200: versionSchema,
+      304: t.Void(),
+    },
   })
 
   .get('/health', () => ({ status: 'ok' as const }), {

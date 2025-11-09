@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
     "target": "ESNext",
     "jsx": "react-jsx",
     "lib": ["ESNext"],
@@ -11,6 +10,7 @@
       "@rttnd/llm-shared": ["./packages/shared/src/index.ts"],
       "@rttnd/llm-shared/*": ["./packages/shared/src/*"]
     },
+    "types": ["@cloudflare/workers-types"],
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "strict": true,
@@ -25,10 +25,5 @@
     "noEmit": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
-  },
-  "references": [
-    { "path": "./packages/shared" },
-    { "path": "./packages/server" },
-    { "path": "./packages/client" }
-  ]
+  }
 }

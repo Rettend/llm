@@ -11,6 +11,8 @@
 # production
 .env
 
+/data/
+
 # monorepo
 **/dist
 **/node_modules

@@ -80,7 +80,6 @@ export class LLMClient {
       lastFetch: 0,
     }
 
-    // Initialize Eden Treaty client
     this.api = treaty<typeof app>(this.config.baseUrl, {
       fetch: this.config.fetchOptions,
       headers: typeof this.config.headers === 'function'
@@ -88,7 +87,6 @@ export class LLMClient {
         : this.config.headers,
     })
 
-    // Start auto-refresh if enabled
     if (this.config.autoRefreshInterval > 0)
       this.startAutoRefresh()
   }
@@ -98,7 +96,6 @@ export class LLMClient {
    */
   async getManifest(options?: { forceRefresh?: boolean }): Promise<LLMClientResponse<Manifest>> {
     try {
-      // Return cached data if available and not forcing refresh
       if (this.config.enableCache && this.cache.manifest && !options?.forceRefresh) {
         return {
           data: this.cache.manifest,
@@ -107,7 +104,6 @@ export class LLMClient {
         }
       }
 
-      // Fetch from API
       const { data, error, status } = await this.api.v1.manifest.get()
 
       if (error || !data) {
@@ -116,7 +112,6 @@ export class LLMClient {
         return { data: null, error: err, cached: false }
       }
 
-      // Update cache
       if (this.config.enableCache) {
         this.cache.manifest = data
         this.cache.version = data.version
@@ -138,7 +133,6 @@ export class LLMClient {
    */
   async getProviders(options?: { forceRefresh?: boolean }): Promise<LLMClientResponse<Provider[]>> {
     try {
-      // Try to get from cached manifest first
       if (this.config.enableCache && this.cache.manifest && !options?.forceRefresh) {
         return {
           data: this.cache.manifest.providers,
@@ -147,7 +141,6 @@ export class LLMClient {
         }
       }
 
-      // Fetch from API
       const { data, error, status } = await this.api.v1.providers.get()
 
       if (error || !data) {
@@ -173,7 +166,6 @@ export class LLMClient {
     options?: { forceRefresh?: boolean },
   ): Promise<LLMClientResponse<Model[]>> {
     try {
-      // Try to get from cached manifest first
       if (this.config.enableCache && this.cache.manifest && !options?.forceRefresh) {
         const models = this.cache.manifest.models.filter(m => m.provider === providerId)
         return {
@@ -183,7 +175,6 @@ export class LLMClient {
         }
       }
 
-      // Fetch from API
       const { data, error, status } = await this.api.v1.providers({ providerId }).models.get()
 
       if (error || !data) {
@@ -231,7 +222,6 @@ export class LLMClient {
       if (error || !data)
         return false
 
-      // Check if version has changed
       if (this.cache.version && data.version !== this.cache.version) {
         await this.getManifest({ forceRefresh: true })
         return true

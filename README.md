@@ -48,8 +48,8 @@ Returns the complete manifest with all providers and models.
 
 ```json
 {
-  "version": "v1.1234567890",
-  "etag": "W/\"...\"",
+  "version": "v1.5c3e2c7d9f8a",
+  "etag": "\"5c3e2c7d9f8a6b4c1d0e9f8a6b4c1d0e\"",
   "generatedAt": "2025-01-15T02:00:00.000Z",
   "providers": [/* ... */],
   "models": [/* ... */]
@@ -138,8 +138,8 @@ Returns version info for update checks.
 
 ```json
 {
-  "version": "v1.1234567890",
-  "etag": "W/\"...\"",
+  "version": "v1.5c3e2c7d9f8a",
+  "etag": "\"5c3e2c7d9f8a6b4c1d0e9f8a6b4c1d0e\"",
   "generatedAt": "2025-01-15T02:00:00.000Z"
 }
 ```
@@ -198,7 +198,7 @@ bun run probe
 - **CDN**: `max-age=600` (10 min), `s-maxage=86400` (1 day)
 - **Stale-while-revalidate**: 7 days
 - **Stale-if-error**: 7 days
-- **ETag**s
+- **ETags**: Strong content hashes shared across `/v1/manifest`, `/v1/providers`, `/v1/providers/:providerId/models`, and `/v1/version` so clients can rely on conditional requests.
 
 ### Scoring System
 
