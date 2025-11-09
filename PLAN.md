@@ -145,6 +145,15 @@ export function scoreSpeed(tokensPerSec?: number): 0 | 1 | 2 | 3 | 4 | 5 {
 ### Capabilities strategy
 
 - **Source of truth:** `packages/shared/src/capabilities.ts` - manually curated mapping by provider/model indicating capabilities like `vision`, `reasoning`, `toolUse`, `json`, `audio`, etc., plus `contextWindow`.
+
+---
+
+## Active Tasks
+
+- [ ] Stabilize manifest ETag generation with content hashing (server `transform.ts`).
+- [ ] Normalize `If-None-Match` handling and reuse across endpoints.
+- [ ] Extend ETag/304 responses to `/v1/providers`, `/v1/providers/:providerId/models`, and `/v1/version`.
+- [ ] Update documentation examples to reflect strong ETags and endpoint caching behavior.
 - **Server integration:** `transform.ts` merges capabilities from the mapping into each model during transformation.
 - **Probe script:** `packages/server/scripts/probe-capabilities.ts` uses Vercel AI SDK to test real model capabilities. Run with `bun run probe` to verify/update the mapping.
 

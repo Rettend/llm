@@ -4,19 +4,39 @@ A lightweight, cache-optimized LLM registry system that auto-updates from Artifi
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=Rettend/llm)
 
-## Features
-
-- 🔄 **Auto-updates** from Artificial Analysis API daily via Cron
-- ⚡ **Blazing fast** with aggressive caching at CDN, KV, and client layers
-- 🌍 **Edge-optimized** runs on Cloudflare Workers globally
-- 🔒 **Type-safe** full TypeScript support with Eden
-- 📦 **Zero maintenance** apps auto-update without redeployment
-- 🎯 **Smart scoring** automatic IQ and speed ratings (0-5 scale)
-- 🧩 **Capabilities mapping** curated model capabilities (vision, tools, JSON, etc.)
-
 ## Quick Start
 
-Click the Deploy button above!
+### Deploy the API
+
+- Click the Deploy button above!
+
+### Use the Client Library
+
+```bash
+bun add @rttnd/llm
+```
+
+```typescript
+import { createLLMClient } from '@rttnd/llm'
+
+const client = createLLMClient({
+  baseUrl: 'https://llm-registry.your-subdomain.workers.dev',
+})
+
+// Get all models
+const { data: models } = await client.getModels()
+
+// Search for models
+const { data: visionModels } = await client.searchModels({
+  capability: 'vision',
+  minIq: 3,
+})
+
+// Get specific model details
+const { data: model } = await client.getModel('openai', 'gpt-5')
+```
+
+See the [Client Library Documentation](./packages/client/README.md) for more details.
 
 ## API Endpoints
 
@@ -31,8 +51,8 @@ Returns the complete manifest with all providers and models.
   "version": "v1.1234567890",
   "etag": "W/\"...\"",
   "generatedAt": "2025-01-15T02:00:00.000Z",
-  "providers": [/*...*/],
-  "models": [/*...*/]
+  "providers": [/* ... */],
+  "models": [/* ... */]
 }
 ```
 
@@ -74,6 +94,37 @@ Returns models for a specific provider.
       "input": 1.25,
       "output": 10,
       "blended": 3.44
+    }
+  }
+]
+```
+
+### GET `/v1/models/search`
+
+Search models with query parameters rather than downloading the full manifest.
+
+**Query Parameters:**
+
+- `name` - Filter by partial match across name, value, or alias
+- `provider` - Restrict results to a specific provider slug
+- `capability` - Require a capability (`text`, `vision`, `reasoning`, `toolUse`, `json`, `audio`)
+- `minIq` - Minimum IQ score (0-5)
+- `minSpeed` - Minimum speed score (0-5)
+
+**Response:**
+
+```json
+[
+  {
+    "id": "...",
+    "value": "gpt-5",
+    "provider": "openai",
+    "name": "GPT-5",
+    "iq": 5,
+    "speed": 3,
+    "capabilities": {
+      "vision": true,
+      "text": true
     }
   }
 ]

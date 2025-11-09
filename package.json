@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "dev": "bun run --cwd packages/server dev",
+    "build": "tsdown",
     "deploy": "bun run --cwd packages/server deploy",
     "cf:dev": "bun run --cwd packages/server cf:dev",
     "cf:tail": "bun run --cwd packages/server cf:tail",
@@ -17,7 +18,8 @@
     "test:ui": "vitest --ui",
     "probe": "bun run scripts/probe.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
-    "update": "taze -wr latest"
+    "update": "taze -wr latest",
+    "release": "bumpp && bun run build && npm publish packages/client"
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "^2.0.39",

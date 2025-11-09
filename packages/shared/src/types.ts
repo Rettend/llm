@@ -31,16 +31,16 @@ export interface Model {
   // Metrics
   metrics?: {
     contextWindow?: number // From capabilities mapping
-    intelligenceIndex?: number
-    codingIndex?: number
-    mathIndex?: number
+    intelligenceIndex?: number | null
+    codingIndex?: number | null
+    mathIndex?: number | null
   }
 
   // Pricing (per 1M tokens)
   pricing?: {
-    input?: number
-    output?: number
-    blended?: number // 3:1 ratio default
+    input?: number | null
+    output?: number | null
+    blended?: number | null // 3:1 ratio default
   }
 
   // Metadata
@@ -49,7 +49,7 @@ export interface Model {
 
   // AI SDK settings
   config?: {
-    mode: 'auto' | 'json' | 'tool'  
+    mode: 'auto' | 'json' | 'tool'
   }
 }
 
