@@ -3,10 +3,26 @@
   "type": "module",
   "version": "0.0.0",
   "description": "LLM Registry Client Library",
-  "exports": {
-    ".": "./src/index.ts"
+  "author": "Rettend <hi@rettend.me>",
+  "license": "MIT",
+  "homepage": "https://github.com/rettend/llm",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rettend/llm"
   },
-  "main": "./src/index.ts",
+  "keywords": [
+    "llm",
+    "ai",
+    "ai sdk",
+    "artificial analysis",
+    "llm registry"
+  ],
+  "exports": {
+    ".": "./src/index.mjs",
+    "./types": "./dist/index.d.mts"
+  },
+  "main": "./src/index.mjs",
+  "types": "./dist/index.d.mts",
   "publishConfig": {
     "access": "public"
   },
