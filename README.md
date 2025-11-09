@@ -2,7 +2,7 @@
 
 A lightweight, cache-optimized LLM registry system that auto-updates from Artificial Analysis API daily and serves via Cloudflare Workers.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=Rettend/llm)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Rettend/llm)
 
 ## Quick Start
 

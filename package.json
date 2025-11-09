@@ -22,9 +22,6 @@
     "update": "taze -wr latest",
     "release": "bumpp && bun run build && bun run --cwd packages/client release"
   },
-  "dependencies": {
-    "unstorage": "^1.17.2"
-  },
   "devDependencies": {
     "@ai-sdk/anthropic": "^2.0.39",
     "@ai-sdk/azure": "^2.0.59",
@@ -42,6 +39,7 @@
     "eslint": "^9.38.0",
     "taze": "^19.9.0",
     "tsdown": "^0.16.1",
+    "unstorage": "^1.17.2",
     "zod": "^4.1.12"
   }
 }
