@@ -20,7 +20,7 @@
     "probe": "bun run scripts/probe.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
     "update": "taze -wr latest",
-    "release": "bumpp && bun run build && npm publish packages/client"
+    "release": "bumpp && bun run build && npm publish --cwd packages/client"
   },
   "dependencies": {
     "unstorage": "^1.17.2"
