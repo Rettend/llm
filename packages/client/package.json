@@ -31,7 +31,8 @@
   "scripts": {
     "build": "tsdown",
     "check": "tsgo --noEmit",
-    "test": "vitest"
+    "test": "vitest",
+    "release": "npm publish"
   },
   "dependencies": {
     "@elysiajs/eden": "^1.4.4",
