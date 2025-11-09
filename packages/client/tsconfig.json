@@ -1,8 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "lib": ["dom"],
     "rootDir": "./src",
-    "paths": {},
+    "paths": {
+      "unstorage/drivers/*": ["../../node_modules/unstorage/drivers/*.d.ts"]
+    },
     "outDir": "./dist"
   },
   "include": ["src/**/*"]

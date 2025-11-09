@@ -22,6 +22,9 @@
     "update": "taze -wr latest",
     "release": "bumpp && bun run build && npm publish packages/client"
   },
+  "dependencies": {
+    "unstorage": "^1.17.2"
+  },
   "devDependencies": {
     "@ai-sdk/anthropic": "^2.0.39",
     "@ai-sdk/azure": "^2.0.59",

@@ -1,9 +1,14 @@
 import type { app } from '@rttnd/llm-server'
 import type { Manifest, Model, ModelSearchQuery, Provider } from '@rttnd/llm-shared'
+import type { Storage } from 'unstorage'
+import process from 'node:process'
 import { treaty } from '@elysiajs/eden'
 import { filterModels } from '@rttnd/llm-shared'
+import { createStorage } from 'unstorage'
 
 export * from '@rttnd/llm-shared'
+
+export type CacheMode = 'auto' | 'localStorage' | 'fs' | 'none'
 
 export interface LLMClientConfig {
   /**
@@ -13,10 +18,10 @@ export interface LLMClientConfig {
   baseUrl: string
 
   /**
-   * Enable in-memory caching of manifest data
-   * @default true
+   * Persist cache entries between sessions
+   * @default 'auto'
    */
-  enableCache?: boolean
+  cache?: CacheMode
 
   /**
    * Auto-refresh interval in milliseconds
@@ -52,20 +57,92 @@ export interface LLMClientResponse<T> {
   cached: boolean
 }
 
+interface PersistedMeta {
+  version: string | null
+  etag: string | null
+  generatedAt: string | null
+  updatedAt: number | null
+}
+
+type ResolvedCacheMode = Exclude<CacheMode, 'auto'>
+
+const CACHE_SCHEMA_VERSION = '1'
+const STORAGE_NAMESPACE = 'llm-registry-cache'
+const MANIFEST_KEY = 'manifest'
+const META_KEY = 'meta'
+
+function isLocalStorageAvailable(): boolean {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined')
+    return false
+
+  try {
+    const probeKey = '__llm_registry_probe__'
+    window.localStorage.setItem(probeKey, probeKey)
+    window.localStorage.removeItem(probeKey)
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
+function isNodeLike(): boolean {
+  if (typeof process === 'undefined')
+    return false
+
+  const versions = process.versions ?? {}
+  return Boolean(versions.node || versions.bun || versions.deno)
+}
+
+function resolveCacheMode(mode: CacheMode | undefined): ResolvedCacheMode {
+  const requested = mode ?? 'auto'
+
+  if (requested === 'localStorage')
+    return isLocalStorageAvailable() ? 'localStorage' : 'none'
+
+  if (requested === 'fs')
+    return isNodeLike() ? 'fs' : 'none'
+
+  if (requested === 'none')
+    return 'none'
+
+  if (isLocalStorageAvailable())
+    return 'localStorage'
+
+  return isNodeLike() ? 'fs' : 'none'
+}
+
+async function hashBaseUrl(baseUrl: string): Promise<string> {
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    const data = new TextEncoder().encode(baseUrl)
+    const digest = await crypto.subtle.digest('SHA-256', data)
+    return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('')
+  }
+
+  return baseUrl.replace(/[^a-z0-9]/gi, '').slice(0, 48) || 'default'
+}
+
 export class LLMClient {
   public config: Required<LLMClientConfig>
   public cache: {
     manifest: Manifest | null
     version: string | null
+    etag: string | null
+    generatedAt: string | null
     lastFetch: number
   }
 
   public refreshTimer: Timer | null = null
   private api: ReturnType<typeof treaty<typeof app>>
+  private readonly requestedCacheMode: CacheMode
+  private persistenceMode: ResolvedCacheMode
+  private storage: Storage | null = null
+  private namespace = ''
+  private ready: Promise<void>
 
   constructor(config: LLMClientConfig) {
     this.config = {
-      enableCache: true,
+      cache: 'auto',
       autoRefreshInterval: 600000, // 10 minutes
       fetchOptions: {},
       headers: {},
@@ -74,9 +151,14 @@ export class LLMClient {
       ...config,
     }
 
+    this.requestedCacheMode = this.config.cache ?? 'auto'
+    this.persistenceMode = resolveCacheMode(this.config.cache)
+
     this.cache = {
       manifest: null,
       version: null,
+      etag: null,
+      generatedAt: null,
       lastFetch: 0,
     }
 
@@ -87,16 +169,30 @@ export class LLMClient {
         : this.config.headers,
     })
 
-    if (this.config.autoRefreshInterval > 0)
-      this.startAutoRefresh()
+    if (this.persistenceMode === 'none' && this.requestedCacheMode !== 'auto' && this.requestedCacheMode !== 'none') {
+      queueMicrotask(() => {
+        this.config.onError(new Error(`Requested cache mode "${this.requestedCacheMode}" is unavailable in this environment; caching disabled.`))
+      })
+    }
+
+    this.ready = this.initializePersistence()
+    this.ready.catch(() => {})
+
+    if (this.config.autoRefreshInterval > 0) {
+      this.ready
+        .then(() => this.startAutoRefresh())
+        .catch(error => this.config.onError(error instanceof Error ? error : new Error(String(error))))
+    }
   }
 
   /**
    * Get the complete manifest with all providers and models
    */
   async getManifest(options?: { forceRefresh?: boolean }): Promise<LLMClientResponse<Manifest>> {
+    await this.ready
+
     try {
-      if (this.config.enableCache && this.cache.manifest && !options?.forceRefresh) {
+      if (this.cache.manifest && !options?.forceRefresh) {
         return {
           data: this.cache.manifest,
           error: null,
@@ -109,21 +205,35 @@ export class LLMClient {
       if (error || !data) {
         const err = new Error(`Failed to fetch manifest: ${status}`)
         this.config.onError(err)
+
+        if (this.cache.manifest && !options?.forceRefresh) {
+          return {
+            data: this.cache.manifest,
+            error: null,
+            cached: true,
+          }
+        }
+
         return { data: null, error: err, cached: false }
       }
 
-      if (this.config.enableCache) {
-        this.cache.manifest = data
-        this.cache.version = data.version
-        this.cache.lastFetch = Date.now()
-        this.config.onUpdate(data)
-      }
+      this.setMemoryCache(data)
+      await this.persistManifest(data)
 
       return { data, error: null, cached: false }
     }
     catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       this.config.onError(error)
+
+      if (this.cache.manifest && !options?.forceRefresh) {
+        return {
+          data: this.cache.manifest,
+          error: null,
+          cached: true,
+        }
+      }
+
       return { data: null, error, cached: false }
     }
   }
@@ -132,8 +242,10 @@ export class LLMClient {
    * Get all providers
    */
   async getProviders(options?: { forceRefresh?: boolean }): Promise<LLMClientResponse<Provider[]>> {
+    await this.ready
+
     try {
-      if (this.config.enableCache && this.cache.manifest && !options?.forceRefresh) {
+      if (this.cache.manifest && !options?.forceRefresh) {
         return {
           data: this.cache.manifest.providers,
           error: null,
@@ -165,8 +277,10 @@ export class LLMClient {
     providerId: string,
     options?: { forceRefresh?: boolean },
   ): Promise<LLMClientResponse<Model[]>> {
+    await this.ready
+
     try {
-      if (this.config.enableCache && this.cache.manifest && !options?.forceRefresh) {
+      if (this.cache.manifest && !options?.forceRefresh) {
         const models = this.cache.manifest.models.filter(m => m.provider === providerId)
         return {
           data: models,
@@ -216,6 +330,8 @@ export class LLMClient {
    * Check for updates and refresh cache if needed
    */
   async checkForUpdates(): Promise<boolean> {
+    await this.ready
+
     try {
       const { data, error } = await this.api.v1.version.get()
 
@@ -223,8 +339,8 @@ export class LLMClient {
         return false
 
       if (this.cache.version && data.version !== this.cache.version) {
-        await this.getManifest({ forceRefresh: true })
-        return true
+        const manifestResponse = await this.getManifest({ forceRefresh: true })
+        return manifestResponse.error === null
       }
 
       return false
@@ -238,6 +354,8 @@ export class LLMClient {
    * Get current version info
    */
   async getVersion(): Promise<LLMClientResponse<{ version: string, etag: string, generatedAt: string }>> {
+    await this.ready
+
     try {
       const { data, error, status } = await this.api.v1.version.get()
 
@@ -246,6 +364,10 @@ export class LLMClient {
         this.config.onError(err)
         return { data: null, error: err, cached: false }
       }
+
+      this.cache.version = data.version
+      this.cache.etag = data.etag
+      this.cache.generatedAt = data.generatedAt
 
       return { data, error: null, cached: false }
     }
@@ -298,6 +420,8 @@ export class LLMClient {
     query: ModelSearchQuery,
     options?: { forceRefresh?: boolean },
   ): Promise<LLMClientResponse<Model[]>> {
+    await this.ready
+
     try {
       const { data, error, status } = await this.api.v1.models.search.get({
         query: {
@@ -328,8 +452,7 @@ export class LLMClient {
       const error = err instanceof Error ? err : new Error(String(err))
       this.config.onError(error)
     }
-
-    const cachedManifest = this.config.enableCache && !options?.forceRefresh
+    const cachedManifest = !options?.forceRefresh
       ? this.cache.manifest
       : null
 
@@ -359,7 +482,10 @@ export class LLMClient {
   clearCache(): void {
     this.cache.manifest = null
     this.cache.version = null
+    this.cache.etag = null
+    this.cache.generatedAt = null
     this.cache.lastFetch = 0
+    void this.clearPersistentCache()
   }
 
   /**
@@ -390,6 +516,147 @@ export class LLMClient {
   destroy(): void {
     this.stopAutoRefresh()
     this.clearCache()
+    void this.ready.then(() => this.disposeStorage())
+  }
+
+  private async initializePersistence(): Promise<void> {
+    try {
+      this.namespace = await hashBaseUrl(this.config.baseUrl)
+
+      const storage = await this.createStorage(this.persistenceMode)
+      this.storage = storage
+
+      if (!storage)
+        return
+
+      const [manifest, meta] = await Promise.all([
+        storage.getItem<Manifest | null>(MANIFEST_KEY),
+        storage.getItem<PersistedMeta | null>(META_KEY),
+      ])
+
+      if (manifest && meta && meta.version === manifest.version) {
+        this.cache.manifest = manifest
+        this.cache.version = meta.version
+        this.cache.etag = meta.etag ?? manifest.etag ?? null
+        this.cache.generatedAt = meta.generatedAt ?? manifest.generatedAt ?? null
+        this.cache.lastFetch = meta.updatedAt ?? Date.now()
+      }
+    }
+    catch (error) {
+      this.disablePersistence(error)
+    }
+  }
+
+  private async createStorage(mode: ResolvedCacheMode): Promise<Storage | null> {
+    if (mode === 'none')
+      return null
+
+    if (mode === 'localStorage') {
+      if (!isLocalStorageAvailable())
+        return null
+
+      const { default: localStorageDriver } = await import('unstorage/drivers/localstorage')
+
+      return createStorage({
+        driver: localStorageDriver({ base: `${STORAGE_NAMESPACE}:${CACHE_SCHEMA_VERSION}:${this.namespace}` }),
+      })
+    }
+
+    if (!isNodeLike())
+      return null
+
+    const [{ default: fsDriver }, pathModule, osModule, fsPromises] = await Promise.all([
+      import('unstorage/drivers/fs-lite'),
+      import('node:path'),
+      import('node:os'),
+      import('node:fs/promises'),
+    ])
+
+    const base = pathModule.join(osModule.tmpdir(), STORAGE_NAMESPACE, CACHE_SCHEMA_VERSION, this.namespace)
+    await fsPromises.mkdir(base, { recursive: true })
+
+    return createStorage({
+      driver: fsDriver({ base }),
+    })
+  }
+
+  private setMemoryCache(manifest: Manifest): void {
+    const wasEmpty = !this.cache.manifest
+    const versionChanged = this.cache.version !== manifest.version
+    const etagChanged = this.cache.etag !== manifest.etag
+
+    this.cache.manifest = manifest
+    this.cache.version = manifest.version
+    this.cache.etag = manifest.etag
+    this.cache.generatedAt = manifest.generatedAt
+    this.cache.lastFetch = Date.now()
+
+    if (wasEmpty || versionChanged || etagChanged)
+      this.config.onUpdate(manifest)
+  }
+
+  private async persistManifest(manifest: Manifest): Promise<void> {
+    if (!this.storage)
+      return
+
+    const meta: PersistedMeta = {
+      version: manifest.version ?? null,
+      etag: manifest.etag ?? null,
+      generatedAt: manifest.generatedAt ?? null,
+      updatedAt: Date.now(),
+    }
+
+    try {
+      await Promise.all([
+        this.storage.setItem(MANIFEST_KEY, manifest),
+        this.storage.setItem(META_KEY, meta),
+      ])
+    }
+    catch (error) {
+      this.disablePersistence(error)
+    }
+  }
+
+  private async clearPersistentCache(): Promise<void> {
+    if (!this.storage)
+      return
+
+    try {
+      await Promise.all([
+        this.storage.removeItem(MANIFEST_KEY),
+        this.storage.removeItem(META_KEY),
+      ])
+    }
+    catch (error) {
+      this.disablePersistence(error)
+    }
+  }
+
+  private async disposeStorage(): Promise<void> {
+    if (!this.storage)
+      return
+
+    const storage = this.storage as Storage & { dispose?: () => Promise<void> | void }
+    this.storage = null
+
+    if (typeof storage.dispose === 'function') {
+      try {
+        await storage.dispose()
+      }
+      catch (error) {
+        this.config.onError(error instanceof Error ? error : new Error(String(error)))
+      }
+    }
+  }
+
+  private disablePersistence(error: unknown): void {
+    this.storage = null
+    this.persistenceMode = 'none'
+
+    const err = error instanceof Error ? error : new Error(String(error))
+    const disabledError = new Error(`Persistent cache disabled: ${err.message}`)
+    Object.assign(disabledError, { cause: err })
+    this.config.onError(disabledError)
   }
 }
 

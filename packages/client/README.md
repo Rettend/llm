@@ -26,8 +26,9 @@ const { data: models, error } = await registry.getModels()
 const registry = createRegistry({
   baseUrl: 'https://llm.username.workers.dev',
 
-  // Enable in-memory caching (default: true)
-  enableCache: true,
+  // Persist cache across sessions (default: 'auto')
+  // Options: 'auto' | 'localStorage' | 'fs' | 'none'
+  cache: 'auto',
 
   // Auto-refresh interval in ms (default: 600000 = 10 minutes)
   // Set to 0 to disable auto-refresh
@@ -58,6 +59,15 @@ const registry = createRegistry({
   },
 })
 ```
+
+### Cache modes
+
+- `auto` (default): uses `localStorage` in browsers, falls back to a filesystem cache in Node/Bun via the OS temp directory, otherwise disables persistence.
+- `localStorage`: forces the browser driver. Useful when bundling for the web and you want deterministic behaviour.
+- `fs`: forces the filesystem driver. Great for CLIs, workers, or long-running services that need warm starts.
+- `none`: disables persistence entirely while keeping the in-memory hot cache for the current instance.
+
+Under the hood the client uses [`unstorage`](https://github.com/unjs/unstorage) and always keeps an in-process cache layer for fast reads—even when persistence is disabled.
 
 ## API Reference
 

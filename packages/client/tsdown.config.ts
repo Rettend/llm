@@ -5,6 +5,5 @@ export default defineConfig({
   dts: {
     tsgo: true,
   },
-  external: ['@elysiajs/eden'],
   noExternal: ['@rttnd/llm-shared'],
 })

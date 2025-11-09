@@ -64,7 +64,7 @@ describe('lLMClient', () => {
     })
 
     expect(client.config.baseUrl).toBe('https://llm-registry.workers.dev')
-    expect(client.config.enableCache).toBe(true)
+    expect(client.config.cache).toBe('auto')
     expect(client.config.autoRefreshInterval).toBe(600000)
   })
 
@@ -74,14 +74,14 @@ describe('lLMClient', () => {
 
     const client = createRegistry({
       baseUrl: 'https://custom.workers.dev',
-      enableCache: false,
+      cache: 'none',
       autoRefreshInterval: 300000,
       onUpdate,
       onError,
     })
 
     expect(client.config.baseUrl).toBe('https://custom.workers.dev')
-    expect(client.config.enableCache).toBe(false)
+    expect(client.config.cache).toBe('none')
     expect(client.config.autoRefreshInterval).toBe(300000)
     expect(client.config.onUpdate).toBe(onUpdate)
     expect(client.config.onError).toBe(onError)
@@ -95,6 +95,8 @@ describe('lLMClient', () => {
     // Set some cache
     client.cache.manifest = { version: 'test' } as any
     client.cache.version = 'test'
+    client.cache.etag = 'etag'
+    client.cache.generatedAt = '2025-01-01T00:00:00.000Z'
     client.cache.lastFetch = Date.now()
 
     // Clear cache
@@ -102,27 +104,33 @@ describe('lLMClient', () => {
 
     expect(client.cache.manifest).toBeNull()
     expect(client.cache.version).toBeNull()
+    expect(client.cache.etag).toBeNull()
+    expect(client.cache.generatedAt).toBeNull()
     expect(client.cache.lastFetch).toBe(0)
   })
 
-  it('should stop auto-refresh', () => {
+  it('should stop auto-refresh', async () => {
     const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
       autoRefreshInterval: 1000,
     })
 
-    expect(client.refreshTimer).toBeDefined()
+    await (client as any).ready
+
+    expect(client.refreshTimer).not.toBeNull()
 
     client.stopAutoRefresh()
 
     expect(client.refreshTimer).toBeNull()
   })
 
-  it('should destroy and clean up', () => {
+  it('should destroy and clean up', async () => {
     const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
       autoRefreshInterval: 1000,
     })
+
+    await (client as any).ready
 
     client.cache.manifest = { version: 'test' } as any
 
@@ -132,11 +140,13 @@ describe('lLMClient', () => {
     expect(client.cache.manifest).toBeNull()
   })
 
-  it('should not start auto-refresh when interval is 0', () => {
+  it('should not start auto-refresh when interval is 0', async () => {
     const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
       autoRefreshInterval: 0,
     })
+
+    await (client as any).ready
 
     expect(client.refreshTimer).toBeNull()
   })
@@ -146,6 +156,8 @@ describe('lLMClient', () => {
       baseUrl: 'https://example.dev',
       autoRefreshInterval: 0,
     })
+
+    await (client as any).ready
 
     const mockSearch = vi.fn().mockResolvedValue({
       data: [modelsFixture[0]],
@@ -192,6 +204,8 @@ describe('lLMClient', () => {
       baseUrl: 'https://example.dev',
       autoRefreshInterval: 0,
     })
+
+    await (client as any).ready
 
     const onError = vi.fn()
     client.config.onError = onError
