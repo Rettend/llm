@@ -17,9 +17,9 @@ bun add @rttnd/llm
 ```
 
 ```typescript
-import { createLLMClient } from '@rttnd/llm'
+import { createRegistry } from '@rttnd/llm'
 
-const client = createLLMClient({
+const client = createRegistry({
   baseUrl: 'https://llm-registry.your-subdomain.workers.dev',
 })
 

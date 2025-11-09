@@ -1,6 +1,6 @@
 import type { Manifest, Model } from '@rttnd/llm-shared'
 import { describe, expect, it, vi } from 'vitest'
-import { createClient } from '../src/index'
+import { createRegistry } from '../src/index'
 
 const modelsFixture: Model[] = [
   {
@@ -40,7 +40,7 @@ const manifestFixture: Manifest = {
 
 describe('lLMClient', () => {
   it('should create a client instance', () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
     })
 
@@ -59,7 +59,7 @@ describe('lLMClient', () => {
   })
 
   it('should have correct default config', () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
     })
 
@@ -72,7 +72,7 @@ describe('lLMClient', () => {
     const onUpdate = () => {}
     const onError = () => {}
 
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://custom.workers.dev',
       enableCache: false,
       autoRefreshInterval: 300000,
@@ -88,7 +88,7 @@ describe('lLMClient', () => {
   })
 
   it('should clear cache', () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
     })
 
@@ -106,7 +106,7 @@ describe('lLMClient', () => {
   })
 
   it('should stop auto-refresh', () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
       autoRefreshInterval: 1000,
     })
@@ -119,7 +119,7 @@ describe('lLMClient', () => {
   })
 
   it('should destroy and clean up', () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
       autoRefreshInterval: 1000,
     })
@@ -133,7 +133,7 @@ describe('lLMClient', () => {
   })
 
   it('should not start auto-refresh when interval is 0', () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://llm-registry.workers.dev',
       autoRefreshInterval: 0,
     })
@@ -142,7 +142,7 @@ describe('lLMClient', () => {
   })
 
   it('should call search endpoint when available', async () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://example.dev',
       autoRefreshInterval: 0,
     })
@@ -188,7 +188,7 @@ describe('lLMClient', () => {
   })
 
   it('should fall back to cached manifest when search endpoint fails', async () => {
-    const client = createClient({
+    const client = createRegistry({
       baseUrl: 'https://example.dev',
       autoRefreshInterval: 0,
     })

@@ -396,6 +396,6 @@ export class LLMClient {
 /**
  * Create a new LLM client instance
  */
-export function createClient(config: LLMClientConfig): LLMClient {
+export function createRegistry(config: LLMClientConfig): LLMClient {
   return new LLMClient(config)
 }

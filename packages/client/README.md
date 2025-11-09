@@ -11,19 +11,19 @@ bun add @rttnd/llm
 ## Quick Start
 
 ```typescript
-import { createLLMClient } from '@rttnd/llm'
+import { createRegistry } from '@rttnd/llm'
 
-const client = createLLMClient({
+const registry = createRegistry({
   baseUrl: 'https://llm.username.workers.dev',
 })
 
-const { data: models, error } = await client.getModels()
+const { data: models, error } = await registry.getModels()
 ```
 
 ## Config
 
 ```typescript
-const client = createLLMClient({
+const registry = createRegistry({
   baseUrl: 'https://llm.username.workers.dev',
 
   // Enable in-memory caching (default: true)
@@ -66,10 +66,10 @@ const client = createLLMClient({
 Get the complete manifest with all providers and models:
 
 ```typescript
-const { data, error, cached } = await client.getManifest()
+const { data, error, cached } = await registry.getManifest()
 
 // Force refresh
-const { data } = await client.getManifest({ forceRefresh: true })
+const { data } = await registry.getManifest({ forceRefresh: true })
 ```
 
 ### Get Providers
@@ -77,7 +77,7 @@ const { data } = await client.getManifest({ forceRefresh: true })
 Get all LLM providers:
 
 ```typescript
-const { data: providers, error } = await client.getProviders()
+const { data: providers, error } = await registry.getProviders()
 ```
 
 ### Get Models
@@ -85,7 +85,7 @@ const { data: providers, error } = await client.getProviders()
 Get all models:
 
 ```typescript
-const { data: models, error } = await client.getModels()
+const { data: models, error } = await registry.getModels()
 ```
 
 ### Get Provider Models
@@ -93,7 +93,7 @@ const { data: models, error } = await client.getModels()
 Get models for a specific provider:
 
 ```typescript
-const { data: openAIModels, error } = await client.getProviderModels('openai')
+const { data: openAIModels, error } = await registry.getProviderModels('openai')
 ```
 
 ### Get Specific Model
@@ -101,7 +101,7 @@ const { data: openAIModels, error } = await client.getProviderModels('openai')
 Get a single model by provider and value:
 
 ```typescript
-const { data: model, error } = await client.getModel('openai', 'gpt-5')
+const { data: model, error } = await registry.getModel('openai', 'gpt-5')
 ```
 
 ### Search Models
@@ -110,22 +110,22 @@ Search and filter models. You can combine filters.
 
 ```typescript
 // Search by name
-const { data: gptModels } = await client.searchModels({
+const { data: gptModels } = await registry.searchModels({
   name: 'gpt',
 })
 
 // Filter by provider
-const { data: anthropicModels } = await client.searchModels({
+const { data: anthropicModels } = await registry.searchModels({
   provider: 'anthropic',
 })
 
 // Filter by capability
-const { data: visionModels } = await client.searchModels({
+const { data: visionModels } = await registry.searchModels({
   capability: 'vision',
 })
 
 // Filter by performance
-const { data: smartModels } = await client.searchModels({
+const { data: smartModels } = await registry.searchModels({
   minIq: 4, // IQ score >= 4
   minSpeed: 3, // Speed score >= 3
 })
@@ -136,26 +136,26 @@ const { data: smartModels } = await client.searchModels({
 Manually check for updates:
 
 ```typescript
-const hasUpdates = await client.checkForUpdates()
+const hasUpdates = await registry.checkForUpdates()
 ```
 
 Get current version info:
 
 ```typescript
-const { data: version, error } = await client.getVersion()
+const { data: version, error } = await registry.getVersion()
 ```
 
 ### Cache Management
 
 ```typescript
 // Clear cache manually
-client.clearCache()
+registry.clearCache()
 
 // Stop auto-refresh
-client.stopAutoRefresh()
+registry.stopAutoRefresh()
 
 // Clean up resources
-client.destroy()
+registry.destroy()
 ```
 
 ## Response Format
