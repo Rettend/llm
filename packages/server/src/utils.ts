@@ -12,7 +12,15 @@ export function getAllowedOrigin(request: Request): boolean {
   if (!origin)
     return false
 
-  const allowed = env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) ?? []
+  const raw = env.ALLOWED_ORIGINS?.trim()
+
+  if (!raw)
+    return false
+
+  if (raw === '*')
+    return true
+
+  const allowed = raw.split(',').map(o => o.trim()).filter(Boolean)
 
   for (const pattern of allowed) {
     if (pattern === origin)

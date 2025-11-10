@@ -163,7 +163,7 @@ Health check endpoint.
 Set these in Cloudflare dashboard or via `wrangler secret`:
 
 - `AA_API_KEY` - Your Artificial Analysis API key (<https://artificialanalysis.ai/documentation>)
-- `ALLOWED_ORIGINS` - Comma-separated CORS origins (e.g., `https://app.com,https://*.example.com`)
+- `ALLOWED_ORIGINS` - Comma-separated CORS origins (e.g., `https://app.com,https://*.example.com`), use `*` to allow all origins.
 
 ### Cron Schedule
 
