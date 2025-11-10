@@ -25,6 +25,10 @@
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -32,7 +36,7 @@
     "build": "tsdown",
     "check": "tsgo --noEmit",
     "test": "vitest",
-    "release": "npm publish"
+    "release": "bun publish"
   },
   "dependencies": {
     "@elysiajs/eden": "catalog:prod",
