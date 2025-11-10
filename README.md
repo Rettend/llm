@@ -26,6 +26,8 @@ A lightweight, cache-optimized LLM registry that auto-updates from Artificial An
 
     Use your custom domain or delete that line to use `your-subdomain.workers.dev`
 
+    Change the kv_namespace id to your created Namespace ID
+
 4. #### Set **Variables and Secrets** from `.env`
 
     See [Environment Variables](#environment-variables) below
