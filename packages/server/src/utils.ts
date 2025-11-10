@@ -2,8 +2,7 @@
 
 import type { Manifest } from '@rttnd/llm-shared'
 import type { HTTPHeaders } from 'elysia'
-
-declare const env: Cloudflare.Env
+import { env } from 'cloudflare:workers'
 
 const CACHE_HEADER = 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800'
 
