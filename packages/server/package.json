@@ -19,14 +19,14 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@elysiajs/cors": "catalog:prod",
     "@rttnd/llm-shared": "workspace:*",
-    "elysia": "^1.4.13"
+    "elysia": "catalog:prod"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20251014.0",
-    "@elysiajs/cors": "^1.4.0",
-    "@types/bun": "latest",
-    "@typescript/native-preview": "^7.0.0-dev.20251030.1",
-    "wrangler": "^4.45.2"
+    "@cloudflare/workers-types": "catalog:dev",
+    "@types/bun": "catalog:dev",
+    "@typescript/native-preview": "catalog:dev",
+    "wrangler": "catalog:dev"
   }
 }

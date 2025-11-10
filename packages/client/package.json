@@ -35,13 +35,13 @@
     "release": "npm publish"
   },
   "dependencies": {
-    "@elysiajs/eden": "^1.4.4",
-    "@rttnd/llm-shared": "workspace:*",
-    "unstorage": "^1.17.2"
+    "@elysiajs/eden": "catalog:prod",
+    "unstorage": "catalog:prod"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@typescript/native-preview": "^7.0.0-dev.20251030.1",
-    "vitest": "^4.0.5"
+    "@rttnd/llm-shared": "catalog:prod-inlined",
+    "@types/bun": "catalog:dev",
+    "@typescript/native-preview": "catalog:dev",
+    "vitest": "catalog:dev"
   }
 }

@@ -4,9 +4,44 @@
   "private": true,
   "packageManager": "bun@1.3.1",
   "description": "LLM Registry Monorepo",
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "catalogs": {
+      "dev": {
+        "@ai-sdk/anthropic": "^2.0.39",
+        "@ai-sdk/azure": "^2.0.59",
+        "@ai-sdk/cerebras": "^1.0.27",
+        "@ai-sdk/google": "^2.0.25",
+        "@ai-sdk/groq": "^2.0.26",
+        "@ai-sdk/openai": "^2.0.58",
+        "@ai-sdk/xai": "^2.0.29",
+        "@antfu/eslint-config": "^6.1.0",
+        "@cloudflare/workers-types": "^4.20251014.0",
+        "@openrouter/ai-sdk-provider": "^1.2.0",
+        "@types/bun": "latest",
+        "@typescript/native-preview": "^7.0.0-dev.20251030.1",
+        "ai": "^5.0.82",
+        "bumpp": "^10.3.1",
+        "eslint": "^9.38.0",
+        "taze": "^19.9.0",
+        "tsdown": "^0.16.1",
+        "vitest": "^4.0.5",
+        "wrangler": "^4.45.2"
+      },
+      "prod": {
+        "@elysiajs/cors": "^1.4.0",
+        "@elysiajs/eden": "^1.4.4",
+        "elysia": "^1.4.13",
+        "unstorage": "^1.17.2",
+        "zod": "^4.1.12"
+      },
+      "prod-inlined": {
+        "@rttnd/llm-shared": "workspace:*"
+      }
+    }
+  },
   "scripts": {
     "dev": "bun run --cwd packages/server dev",
     "build": "bun run --cwd packages/shared build && bun run --cwd packages/client build",
@@ -25,23 +60,21 @@
     "release": "bumpp && bun run build && bun run --cwd packages/client release"
   },
   "devDependencies": {
-    "@ai-sdk/anthropic": "^2.0.39",
-    "@ai-sdk/azure": "^2.0.59",
-    "@ai-sdk/cerebras": "^1.0.27",
-    "@ai-sdk/google": "^2.0.25",
-    "@ai-sdk/groq": "^2.0.26",
-    "@ai-sdk/openai": "^2.0.58",
-    "@ai-sdk/xai": "^2.0.29",
-    "@antfu/eslint-config": "^6.1.0",
-    "@openrouter/ai-sdk-provider": "^1.2.0",
-    "@types/bun": "latest",
-    "@typescript/native-preview": "^7.0.0-dev.20251030.1",
-    "ai": "^5.0.82",
-    "bumpp": "^10.3.1",
-    "eslint": "^9.38.0",
-    "taze": "^19.9.0",
-    "tsdown": "^0.16.1",
-    "unstorage": "^1.17.2",
-    "zod": "^4.1.12"
+    "@ai-sdk/anthropic": "catalog:dev",
+    "@ai-sdk/azure": "catalog:dev",
+    "@ai-sdk/cerebras": "catalog:dev",
+    "@ai-sdk/google": "catalog:dev",
+    "@ai-sdk/groq": "catalog:dev",
+    "@ai-sdk/openai": "catalog:dev",
+    "@ai-sdk/xai": "catalog:dev",
+    "@antfu/eslint-config": "catalog:dev",
+    "@openrouter/ai-sdk-provider": "catalog:dev",
+    "@types/bun": "catalog:dev",
+    "@typescript/native-preview": "catalog:dev",
+    "ai": "catalog:dev",
+    "bumpp": "catalog:dev",
+    "eslint": "catalog:dev",
+    "taze": "catalog:dev",
+    "tsdown": "catalog:dev"
   }
 }

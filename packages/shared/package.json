@@ -27,6 +27,6 @@
     "check": "tsgo --noEmit"
   },
   "devDependencies": {
-    "tsdown": "^0.16.1"
+    "tsdown": "catalog:dev"
   }
 }
