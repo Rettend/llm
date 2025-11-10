@@ -8,7 +8,41 @@ A lightweight, cache-optimized LLM registry that auto-updates from Artificial An
 
 ### Deploy the API
 
-- Click the Deploy button above!
+1. #### Click the Deploy button above
+
+    Build command: None
+
+    Deploy command: `bunx wrangler deploy`
+
+    Root directory: `/`
+
+2. #### Create a KV namespace
+
+    Go to **Storage & Databases** > **Workers KV**
+
+    Copy the Namespace ID
+
+3. #### Change `wrangler.toml`
+
+    Use your custom domain or delete that line to use `your-subdomain.workers.dev`
+
+4. #### Set **Variables and Secrets** from `.env`
+
+    See [Environment Variables](#environment-variables) below
+
+5. #### If you want to deploy it manually without waiting until 2AM
+
+    ```bash
+    bunx wrangler deploy
+    ```
+
+    ```bash
+    bun run seed
+    ```
+
+    ```bash
+    wrangler kv key put --binding REGISTRY manifest --path ./data/manifest.json
+    ```
 
 ### Use the Client Library
 
