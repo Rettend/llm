@@ -175,11 +175,11 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       contextWindow: 2_000_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
-    'grok-4-fast-non-reasoning': {
+    'grok-4-fast': {
       contextWindow: 2_000_000,
       capabilities: _(text, vision, toolUse, json),
     },
-    'grok-3-mini': {
+    'grok-3-mini-reasoning': {
       contextWindow: 131_072,
       capabilities: _(text, reasoning, toolUse, json),
     },
@@ -263,11 +263,11 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       contextWindow: 128_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
-    'deepseek-v3-2-exp': {
+    'deepseek-v3-2': {
       contextWindow: 128_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
-    'deepseek-r1-0528': {
+    'deepseek-r1': {
       contextWindow: 128_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
@@ -290,17 +290,29 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       contextWindow: 262_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
-    'qwen3-vl-235b-a22b': {
+    'qwen3-vl-235b-a22b-instruct': {
+      contextWindow: 262_000,
+      capabilities: _(text, vision, toolUse, json),
+    },
+    'qwen3-vl-235b-a22b-reasoning': {
       contextWindow: 262_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
-    'qwen3-next-80b-a3b': {
+    'qwen3-next-80b-a3b-instruct': {
       contextWindow: 262_000,
       capabilities: _(text, toolUse, json),
     },
-    'qwen3-vl-32b': {
+    'qwen3-next-80b-a3b-reasoning': {
+      contextWindow: 262_000,
+      capabilities: _(text, reasoning, toolUse, json),
+    },
+    'qwen3-vl-32b-instruct': {
       contextWindow: 256_000,
       capabilities: _(text, vision, toolUse, json),
+    },
+    'qwen3-vl-32b-reasoning': {
+      contextWindow: 256_000,
+      capabilities: _(text, vision, reasoning, toolUse, json),
     },
     'qwen3-30b-a3b-2507': {
       contextWindow: 262_000,
@@ -310,37 +322,53 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       contextWindow: 256_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
-    'qwen3-vl-30b-a3b': {
+    'qwen3-vl-30b-a3b-instruct': {
       contextWindow: 256_000,
       capabilities: _(text, vision, toolUse, json),
     },
-    'qwen3-4b-2507': {
-      contextWindow: 262_000,
-      capabilities: _(text, reasoning, toolUse, json),
+    'qwen3-vl-30b-a3b-reasoning': {
+      contextWindow: 256_000,
+      capabilities: _(text, vision, reasoning, toolUse, json),
     },
-    'qwen3-coder-480b': {
+    'qwen3-4b-2507-instruct': {
       contextWindow: 262_000,
       capabilities: _(text, toolUse, json),
     },
-    'qwen3-omni-30b-a3b': {
+    'qwen3-coder-480b-a35b-instruct': {
+      contextWindow: 262_000,
+      capabilities: _(text, toolUse, json),
+    },
+    'qwen3-omni-30b-a3b-instruct': {
       contextWindow: 66_000,
       capabilities: _(text, toolUse, json, audio),
     },
-    'qwen3-coder-30b-a3b': {
+    'qwen3-omni-30b-a3b-reasoning': {
+      contextWindow: 66_000,
+      capabilities: _(text, reasoning, toolUse, json, audio),
+    },
+    'qwen3-coder-30b-a3b-instruct': {
       contextWindow: 262_000,
       capabilities: _(text, toolUse, json),
     },
-    'qwen3-vl-8b': {
+    'qwen3-vl-8b-reasoning': {
       contextWindow: 256_000,
       capabilities: _(text, reasoning, vision, toolUse, json),
     },
-    'qwen3-vl-4b': {
+    'qwen3-vl-8b-instruct': {
+      contextWindow: 256_000,
+      capabilities: _(text, vision, toolUse, json),
+    },
+    'qwen3-vl-4b-reasoning': {
+      contextWindow: 256_000,
+      capabilities: _(text, reasoning, vision, toolUse, json),
+    },
+    'qwen3-vl-4b-instruct': {
       contextWindow: 256_000,
       capabilities: _(text, vision, toolUse, json),
     },
   },
 
-  'z-ai': {
+  'zai': {
     'glm-4-6': {
       contextWindow: 200_000,
       capabilities: _(text, reasoning, toolUse, json),
@@ -356,11 +384,11 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
   },
 
   'mistral': {
-    'magistral-medium-1-2': {
+    'magistral-medium': {
       contextWindow: 128_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
-    'magistral-small-1-2': {
+    'magistral-small': {
       contextWindow: 128_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
@@ -474,11 +502,11 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       contextWindow: 128_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
-    'deephermes-3-mistral-24b': {
+    'deephermes-3-mistral-24b-preview': {
       contextWindow: 32_000,
       capabilities: _(text, reasoning, toolUse, json),
     },
-    'deephermes-3-llama-3-1-8b': {
+    'deephermes-3-llama-3-1-8b-preview': {
       contextWindow: 128_000,
       capabilities: _(text, reasoning, toolUse, json),
     },

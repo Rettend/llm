@@ -11,8 +11,6 @@
 # production
 .env
 
-/data/
-
 # monorepo
 **/dist
 **/node_modules
@@ -47,3 +45,6 @@ wrangler.toml.backup
 **/*.log
 package-lock.json
 **/*.bun
+
+
+/data/
