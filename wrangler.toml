@@ -6,7 +6,7 @@ routes = [ { pattern = "llm.rettend.me", custom_domain = true } ]
 
 [[kv_namespaces]]
 binding = "REGISTRY"
-id = "your-kv-namespace-id-here"
+id = "623d8b76dab74f37b63d66cbe55588c4"
 
 [triggers]
 crons = [ "0 2 * * *" ]
