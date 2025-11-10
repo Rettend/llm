@@ -73,4 +73,4 @@ curl https://raw.githubusercontent.com/Rettend/llm/main/public/version.json
 
 This data is automatically updated daily at 3 AM UTC via GitHub Actions.
 
-For the most up-to-date data, use the API directly: <https://llm-registry.your-subdomain.workers.dev/v1/manifest>
+For the most up-to-date data, use the API directly: <https://llm.your-subdomain.workers.dev/v1/manifest>

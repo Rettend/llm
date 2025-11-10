@@ -10,11 +10,3 @@ id = "623d8b76dab74f37b63d66cbe55588c4"
 
 [triggers]
 crons = [ "0 2 * * *" ]
-
-[observability]
-
-[observability.logs]
-enabled = true
-head_sampling_rate = 1
-invocation_logs = true
-persist = true

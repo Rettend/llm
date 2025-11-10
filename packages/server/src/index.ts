@@ -1,8 +1,10 @@
 import type { ModelSearchQuery } from '@rttnd/llm-shared'
 import { cors } from '@elysiajs/cors'
+import { openapi } from '@elysiajs/openapi'
 import { filterModels } from '@rttnd/llm-shared'
 import { Elysia, t } from 'elysia'
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker'
+import { apiDescription, healthDescription, manifestDescription, providerModelsDescription, providersDescription, searchModelsDescription, versionDescription } from './docs'
 import { healthSchema, manifestSchema, modelSchema, modelSearchQuerySchema, providerSchema, versionSchema } from './schema'
 import { applyCachingHeaders, getAllowedOrigin, handleConditionalRequest, loadManifest, parseScore } from './utils'
 
@@ -13,6 +15,27 @@ export const app = new Elysia({
     origin: getAllowedOrigin,
     methods: ['GET', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'If-None-Match'],
+  }))
+  .use(openapi({
+    documentation: {
+      info: {
+        title: 'LLM Registry API',
+        version: '1.0.0',
+        description: apiDescription,
+      },
+      tags: [
+        { name: 'Registry', description: 'Complete registry data' },
+        { name: 'Providers', description: 'LLM provider information' },
+        { name: 'Models', description: 'Model search and retrieval' },
+        { name: 'System', description: 'System health and version info' },
+      ],
+      servers: [
+        {
+          url: 'https://llm.rettend.me',
+          description: 'Production server',
+        },
+      ],
+    },
   }))
   .get('/v1/manifest', async ({ set, headers }) => {
     const manifest = await loadManifest()
@@ -25,6 +48,11 @@ export const app = new Elysia({
     response: {
       200: manifestSchema,
       304: t.Void(),
+    },
+    detail: {
+      summary: 'Get complete manifest',
+      description: manifestDescription,
+      tags: ['Registry'],
     },
   })
 
@@ -39,6 +67,11 @@ export const app = new Elysia({
     response: {
       200: t.Array(providerSchema),
       304: t.Void(),
+    },
+    detail: {
+      summary: 'List all providers',
+      description: providersDescription,
+      tags: ['Providers'],
     },
   })
 
@@ -59,6 +92,11 @@ export const app = new Elysia({
   }, {
     query: modelSearchQuerySchema,
     response: t.Array(modelSchema),
+    detail: {
+      summary: 'Search models',
+      description: searchModelsDescription,
+      tags: ['Models'],
+    },
   })
 
   .get('/v1/providers/:providerId/models', async ({ params, set, headers }) => {
@@ -70,11 +108,16 @@ export const app = new Elysia({
     return manifest.models.filter(model => model.provider === params.providerId)
   }, {
     params: t.Object({
-      providerId: t.String(),
+      providerId: t.String({ description: 'Provider slug (e.g., "openai", "anthropic", "google")' }),
     }),
     response: {
       200: t.Array(modelSchema),
       304: t.Void(),
+    },
+    detail: {
+      summary: 'Get models by provider',
+      description: providerModelsDescription,
+      tags: ['Models'],
     },
   })
 
@@ -91,10 +134,20 @@ export const app = new Elysia({
       200: versionSchema,
       304: t.Void(),
     },
+    detail: {
+      summary: 'Get version info',
+      description: versionDescription,
+      tags: ['System'],
+    },
   })
 
   .get('/health', () => ({ status: 'ok' as const }), {
     response: healthSchema,
+    detail: {
+      summary: 'Health check',
+      description: healthDescription,
+      tags: ['System'],
+    },
   })
   .compile()
 

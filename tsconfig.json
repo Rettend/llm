@@ -8,7 +8,8 @@
     "moduleResolution": "bundler",
     "paths": {
       "@rttnd/llm-shared": ["./packages/shared/src/index.ts"],
-      "@rttnd/llm-shared/*": ["./packages/shared/src/*"]
+      "@rttnd/llm-shared/*": ["./packages/shared/src/*"],
+      "@rttnd/llm-server": ["./packages/server/src/index.ts"]
     },
     "types": ["@cloudflare/workers-types"],
     "allowImportingTsExtensions": true,

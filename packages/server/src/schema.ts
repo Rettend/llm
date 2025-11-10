@@ -7,10 +7,10 @@ export const providerStatusSchema = t.Union([
 ])
 
 export const providerSchema = t.Object({
-  value: t.String(),
-  name: t.String(),
-  keyPlaceholder: t.Optional(t.String()),
-  website: t.Optional(t.String()),
+  value: t.String({ description: 'Provider slug identifier (e.g., "openai", "anthropic")' }),
+  name: t.String({ description: 'Human-readable provider name' }),
+  keyPlaceholder: t.Optional(t.String({ description: 'Example format for API keys (e.g., "sk-...")' })),
+  website: t.Optional(t.String({ description: 'URL to get API keys' })),
   status: t.Optional(providerStatusSchema),
 })
 
@@ -42,16 +42,16 @@ export const scoreSchema = t.Union([
 ])
 
 export const metricsSchema = t.Object({
-  contextWindow: t.Optional(t.Number()),
-  intelligenceIndex: t.Optional(t.Nullable(t.Number())),
-  codingIndex: t.Optional(t.Nullable(t.Number())),
-  mathIndex: t.Optional(t.Nullable(t.Number())),
+  contextWindow: t.Optional(t.Number({ description: 'Maximum context window in tokens' })),
+  intelligenceIndex: t.Optional(t.Nullable(t.Number({ description: 'Artificial Analysis intelligence benchmark score' }))),
+  codingIndex: t.Optional(t.Nullable(t.Number({ description: 'Artificial Analysis coding benchmark score' }))),
+  mathIndex: t.Optional(t.Nullable(t.Number({ description: 'Artificial Analysis math benchmark score' }))),
 })
 
 export const pricingSchema = t.Object({
-  input: t.Optional(t.Nullable(t.Number())),
-  output: t.Optional(t.Nullable(t.Number())),
-  blended: t.Optional(t.Nullable(t.Number())),
+  input: t.Optional(t.Nullable(t.Number({ description: 'Cost per 1M input tokens (USD)' }))),
+  output: t.Optional(t.Nullable(t.Number({ description: 'Cost per 1M output tokens (USD)' }))),
+  blended: t.Optional(t.Nullable(t.Number({ description: 'Blended cost per 1M tokens at 3:1 input/output ratio (USD)' }))),
 })
 
 export const configSchema = t.Object({
@@ -63,41 +63,41 @@ export const configSchema = t.Object({
 })
 
 export const modelSchema = t.Object({
-  id: t.String(),
-  value: t.String(),
-  provider: t.String(),
-  name: t.String(),
-  alias: t.Optional(t.String()),
+  id: t.String({ description: 'Unique model identifier from Artificial Analysis' }),
+  value: t.String({ description: 'Model identifier for AI SDK usage (e.g., "gpt-5", "claude-4-5-sonnet")' }),
+  provider: t.String({ description: 'Provider slug this model belongs to' }),
+  name: t.String({ description: 'Full display name of the model' }),
+  alias: t.Optional(t.String({ description: 'Short name for UI dropdowns' })),
   capabilities: t.Optional(capabilitySchema),
   iq: t.Optional(scoreSchema),
   speed: t.Optional(scoreSchema),
   metrics: t.Optional(metricsSchema),
   pricing: t.Optional(pricingSchema),
-  releaseDate: t.Optional(t.String()),
+  releaseDate: t.Optional(t.String({ description: 'Model release date (ISO 8601)' })),
   status: t.Optional(providerStatusSchema),
   config: t.Optional(configSchema),
 })
 
 export const manifestSchema = t.Object({
-  version: t.String(),
-  etag: t.String(),
-  generatedAt: t.String(),
+  version: t.String({ description: 'Registry version identifier' }),
+  etag: t.String({ description: 'ETag for caching' }),
+  generatedAt: t.String({ description: 'ISO 8601 timestamp of last data update' }),
   providers: t.Array(providerSchema),
   models: t.Array(modelSchema),
 })
 
 export const modelSearchQuerySchema = t.Object({
-  name: t.Optional(t.String()),
-  provider: t.Optional(t.String()),
+  name: t.Optional(t.String({ description: 'Filter by partial match on model name, value, or alias' })),
+  provider: t.Optional(t.String({ description: 'Filter by provider slug (e.g., "openai")' })),
   capability: t.Optional(capabilityKeySchema),
-  minIq: t.Optional(t.String()),
-  minSpeed: t.Optional(t.String()),
+  minIq: t.Optional(t.String({ description: 'Minimum IQ score (0-5)' })),
+  minSpeed: t.Optional(t.String({ description: 'Minimum speed score (0-5)' })),
 })
 
 export const versionSchema = t.Object({
-  version: t.String(),
-  etag: t.String(),
-  generatedAt: t.String(),
+  version: t.String({ description: 'Registry version identifier' }),
+  etag: t.String({ description: 'ETag for caching' }),
+  generatedAt: t.String({ description: 'ISO 8601 timestamp of last data update' }),
 })
 
 export const healthSchema = t.Object({

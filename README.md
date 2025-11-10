@@ -1,6 +1,6 @@
 # LLM Registry
 
-A lightweight, cache-optimized LLM registry system that auto-updates from Artificial Analysis API daily and serves via Cloudflare Workers.
+A lightweight, cache-optimized LLM registry that auto-updates from Artificial Analysis API daily and runs on Cloudflare Workers.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Rettend/llm)
 
@@ -20,7 +20,7 @@ bun add @rttnd/llm
 import { createRegistry } from '@rttnd/llm'
 
 const registry = createRegistry({
-  baseUrl: 'https://llm-registry.your-subdomain.workers.dev',
+  baseUrl: 'https://llm.your-subdomain.workers.dev',
 })
 
 // Get all models

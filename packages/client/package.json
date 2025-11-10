@@ -39,6 +39,7 @@
     "unstorage": "catalog:prod"
   },
   "devDependencies": {
+    "@rttnd/llm-server": "catalog:prod-inlined",
     "@rttnd/llm-shared": "catalog:prod-inlined",
     "@types/bun": "catalog:dev",
     "@typescript/native-preview": "catalog:dev",

@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@elysiajs/cors": "catalog:prod",
-    "@rttnd/llm-shared": "workspace:*",
+    "@elysiajs/openapi": "catalog:prod",
+    "@rttnd/llm-shared": "catalog:prod-inlined",
     "elysia": "catalog:prod"
   },
   "devDependencies": {

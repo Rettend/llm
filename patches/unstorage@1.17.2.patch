@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index 0504e3401ead5f56bf20da20ad7451956d452427..41c339856fa0360e7c7def3c940b4cac0d16cff3 100644
+--- a/package.json
++++ b/package.json
+@@ -8,6 +8,7 @@
+   "sideEffects": false,
+   "exports": {
+     "./drivers/*": {
++      "types": "./drivers/*.d.ts",
+       "import": "./drivers/*.mjs",
+       "require": "./drivers/*.cjs"
+     },

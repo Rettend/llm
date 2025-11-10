@@ -13,7 +13,7 @@ export type CacheMode = 'auto' | 'localStorage' | 'fs' | 'none'
 export interface LLMClientConfig {
   /**
    * Base URL of the LLM Registry API
-   * @default 'https://llm-registry.your-subdomain.workers.dev'
+   * @default 'https://llm.your-subdomain.workers.dev'
    */
   baseUrl: string
 
