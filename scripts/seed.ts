@@ -34,10 +34,6 @@ async function main() {
 
     console.log('📦 To upload to KV, run:')
     console.log(`   wrangler kv key put --binding REGISTRY manifest --path ${outputPath}`)
-    console.log()
-    console.log('🚀 Or deploy and trigger cron:')
-    console.log('   bun run deploy')
-    console.log('   wrangler cron trigger llm')
   }
   catch (error) {
     console.error('❌ Failed to generate manifest:', error)
