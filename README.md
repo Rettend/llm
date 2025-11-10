@@ -41,7 +41,7 @@ A lightweight, cache-optimized LLM registry that auto-updates from Artificial An
     ```
 
     ```bash
-    wrangler kv key put --binding REGISTRY manifest --path ./data/manifest.json
+    wrangler kv key put --binding REGISTRY manifest --path ./data/manifest-preview.json
     ```
 
 ### Use the Client Library
