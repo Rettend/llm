@@ -21,10 +21,10 @@ jobs:
         run: |
           # Replace with your deployed API endpoint
           API_ENDPOINT="${{ vars.API_ENDPOINT }}"
-          
+
           echo "Fetching manifest from $API_ENDPOINT/v1/manifest"
           curl -f -o manifest.json "$API_ENDPOINT/v1/manifest"
-          
+
           # Extract version for commit message
           VERSION=$(jq -r '.version' manifest.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -32,10 +32,10 @@ jobs:
       - name: Transform manifest to public snapshots
         run: |
           mkdir -p public
-          
+
           # Extract providers
           jq -r '.providers | "[\n  " + (map(@json) | join(",\n  ")) + "\n]"' manifest.json > public/providers.json
-          
+
           # Extract models
           jq -r '[.models[] | {
             provider: .provider,
@@ -47,7 +47,7 @@ jobs:
             pricing: .pricing.blended,
             status: .status
           }] | "[\n  " + (map(@json) | join(",\n  ")) + "\n]"' manifest.json > public/models.json
-          
+
           # Create a version file
           jq '{
             version: .version,

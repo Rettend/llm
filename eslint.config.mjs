@@ -6,4 +6,5 @@ export default antfu({
     'no-console': 'warn',
     'curly': ['warn', 'multi-or-nest', 'consistent'],
   },
+  ignores: ['public/**/*'],
 })
