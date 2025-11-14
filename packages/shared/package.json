@@ -13,9 +13,9 @@
       "types": "./dist/types.d.ts",
       "default": "./dist/types.mjs"
     },
-    "./capabilities": {
-      "types": "./dist/capabilities.d.ts",
-      "default": "./dist/capabilities.mjs"
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "default": "./dist/registry.mjs"
     },
     "./search": {
       "types": "./dist/search.d.ts",

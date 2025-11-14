@@ -4,7 +4,7 @@ export default defineConfig({
   entry: [
     'src/index.ts',
     'src/types.ts',
-    'src/capabilities.ts',
+    'src/registry.ts',
     'src/search.ts',
   ],
   dts: {

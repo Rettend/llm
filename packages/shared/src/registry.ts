@@ -1,4 +1,7 @@
-export interface ModelCapabilities {
+export type ModelStatus = 'active' | 'beta' | 'deprecated'
+
+export interface ModelRegistry {
+  status: ModelStatus
   contextWindow: number
   capabilities: {
     text: boolean
@@ -10,7 +13,7 @@ export interface ModelCapabilities {
   }
 }
 
-type CapabilitiesMap = Record<string, Record<string, ModelCapabilities>>
+type RegistryMap = Record<string, Record<string, ModelRegistry>>
 
 export type CapabilityKey = 'text' | 'vision' | 'reasoning' | 'toolUse' | 'json' | 'audio'
 type CapabilityFlags = { [K in CapabilityKey]?: boolean }
@@ -56,15 +59,16 @@ function _(...keys: CapabilityKey[]): CapabilityFlags {
   return toFlags(keys)
 }
 
-interface FlexibleModelCapabilities {
+interface FlexibleModelRegistry {
+  status?: ModelStatus
   contextWindow: number
   capabilities: readonly CapabilityKey[] | CapabilityFlags
 }
 
-type FlexibleCapabilitiesMap = Record<string, Record<string, FlexibleModelCapabilities>>
+type FlexibleRegistryMap = Record<string, Record<string, FlexibleModelRegistry>>
 
-function defineModelCapabilities(map: FlexibleCapabilitiesMap): CapabilitiesMap {
-  const out: CapabilitiesMap = {}
+function defineModelRegistry(map: FlexibleRegistryMap): RegistryMap {
+  const out: RegistryMap = {}
   for (const provider of Object.keys(map)) {
     out[provider] = {}
     const models = map[provider]
@@ -77,27 +81,39 @@ function defineModelCapabilities(map: FlexibleCapabilitiesMap): CapabilitiesMap 
       out[provider][model] = {
         contextWindow: def.contextWindow,
         capabilities: toFlags(def.capabilities),
+        status: def.status ?? 'active',
       }
     }
   }
   return out
 }
 
-export const MODEL_CAPABILITIES = defineModelCapabilities({
+export const MODEL_REGISTRY = defineModelRegistry({
   'openai': {
+    'gpt-5-1': {
+      contextWindow: 400_000,
+      capabilities: _(text, vision, reasoning, toolUse, json),
+    },
+    'gpt-5-1-non-reasoning': {
+      contextWindow: 400_000,
+      capabilities: _(text, vision, reasoning, toolUse, json),
+    },
     'gpt-5-codex': {
       contextWindow: 400_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
     'gpt-5': {
+      status: 'deprecated',
       contextWindow: 400_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
     'gpt-5-medium': {
+      status: 'deprecated',
       contextWindow: 400_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
     'o3': {
+      status: 'deprecated',
       contextWindow: 200_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
@@ -106,6 +122,7 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
     'gpt-5-low': {
+      status: 'deprecated',
       contextWindow: 400_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
@@ -142,6 +159,7 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
     'gpt-5-chatgpt': {
+      status: 'deprecated',
       contextWindow: 128_000,
       capabilities: _(text, vision, reasoning, toolUse, json),
     },
@@ -677,7 +695,7 @@ export const MODEL_CAPABILITIES = defineModelCapabilities({
 /**
  * Get capabilities for a specific model
  */
-export function getModelCapabilities(provider: string, modelValue: string): ModelCapabilities | undefined {
-  const group = (MODEL_CAPABILITIES as CapabilitiesMap)[provider]
+export function getModelRegistry(provider: string, modelValue: string): ModelRegistry | undefined {
+  const group = (MODEL_REGISTRY as RegistryMap)[provider]
   return group?.[modelValue]
 }

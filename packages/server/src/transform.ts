@@ -1,5 +1,5 @@
 import type { AAModel, AAResponse, Manifest, Model, Provider } from '@rttnd/llm-shared'
-import { getModelCapabilities } from '@rttnd/llm-shared/capabilities'
+import { getModelRegistry } from '@rttnd/llm-shared/registry'
 import { scoreIq, scoreSpeed } from './scoring'
 
 const PROVIDER_MAP: Record<string, { value: string, name: string, keyPlaceholder?: string, website?: string }> = {
@@ -55,7 +55,7 @@ function transformAAModel(aaModel: AAModel): Model {
   const provider = getProviderValue(aaModel.model_creator.slug)
   const value = aaModel.slug
 
-  const capabilitiesData = getModelCapabilities(provider, value)
+  const registryEntry = getModelRegistry(provider, value)
 
   const baseName = aaModel.name ?? ''
 
@@ -66,13 +66,13 @@ function transformAAModel(aaModel: AAModel): Model {
     name: aaModel.name,
     alias: baseName.split('(')[0]?.trim(),
 
-    capabilities: capabilitiesData?.capabilities,
+    capabilities: registryEntry?.capabilities,
 
     iq: scoreIq(aaModel.evaluations?.artificial_analysis_intelligence_index),
     speed: scoreSpeed(aaModel.median_output_tokens_per_second),
 
     metrics: {
-      contextWindow: capabilitiesData?.contextWindow,
+      contextWindow: registryEntry?.contextWindow,
       intelligenceIndex: aaModel.evaluations?.artificial_analysis_intelligence_index,
       codingIndex: aaModel.evaluations?.artificial_analysis_coding_index,
       mathIndex: aaModel.evaluations?.artificial_analysis_math_index,
@@ -85,7 +85,7 @@ function transformAAModel(aaModel: AAModel): Model {
     },
 
     releaseDate: aaModel.release_date,
-    status: 'active',
+    status: registryEntry?.status ?? 'active',
   }
 }
 

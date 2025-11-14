@@ -53,10 +53,8 @@
     "lint": "eslint . --fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "aa:fetch": "bun run scripts/fetch-aa.ts",
     "seed": "bun run scripts/seed.ts",
-    "report": "bun run scripts/report-model-gaps.ts",
-    "probe": "bun run scripts/probe.ts",
+    "report": "bun run scripts/report.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
     "update": "taze -wr latest",
     "release": "bumpp packages/client/package.json && bun run build && bun run --cwd packages/client release"

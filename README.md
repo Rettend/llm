@@ -216,25 +216,10 @@ crons = [ "0 2 * * *" ]
 
 1. **Cloudflare Cron** fetches from Artificial Analysis API daily
 2. **Transform** converts AA data to normalized model format
-3. **Score** calculates IQ (intelligence) and Speed ratings
-4. **Store** saves manifest to Workers KV
-5. **Serve** with aggressive caching (CDN + ETags)
-6. **GitHub Action** publishes human-readable snapshot
-
-### Capabilities
-
-Model capabilities (vision, tool use, JSON mode, etc.) and context windows are manually curated in `packages/shared/src/capabilities.ts`. To verify or update capabilities, run:
-
-```bash
-bun run probe
-```
-
-### Caching
-
-- **CDN**: `max-age=600` (10 min), `s-maxage=86400` (1 day)
-- **Stale-while-revalidate**: 7 days
-- **Stale-if-error**: 7 days
-- **ETags**: Strong content hashes shared across `/v1/manifest`, `/v1/providers`, `/v1/providers/:providerId/models`, and `/v1/version` so clients can rely on conditional requests.
+3. **Store** saves manifest to Workers KV
+4. **Serve** manifest from Worker
+5. **GitHub Action** publishes human-readable snapshot
+6. **Me:** I add the missing data to the registry that's missing from the AA API
 
 ### Scoring System
 
