@@ -4,6 +4,7 @@ import { openapi } from '@elysiajs/openapi'
 import { filterModels } from '@rttnd/llm-shared'
 import { Elysia, t } from 'elysia'
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker'
+import cronHandler from './cron'
 import { apiDescription, healthDescription, manifestDescription, providerModelsDescription, providersDescription, searchModelsDescription, versionDescription } from './docs'
 import { healthSchema, manifestSchema, modelSchema, modelSearchQuerySchema, providerSchema, versionSchema } from './schema'
 import { applyCachingHeaders, getAllowedOrigin, handleConditionalRequest, loadManifest, parseScore } from './utils'
@@ -151,4 +152,7 @@ export const app = new Elysia({
   })
   .compile()
 
-export default app
+export default {
+  fetch: app.fetch,
+  scheduled: cronHandler.scheduled,
+}

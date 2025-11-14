@@ -122,13 +122,8 @@ async function sha256Hex(input: string): Promise<string> {
   const encoder = new TextEncoder()
   const data = encoder.encode(input)
 
-  if (typeof crypto !== 'undefined' && typeof crypto.subtle !== 'undefined') {
-    const digest = await crypto.subtle.digest('SHA-256', data)
-    return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('')
-  }
-
-  const { createHash } = await import('node:crypto')
-  return createHash('sha256').update(data).digest('hex')
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
 async function createManifestTags(providers: Provider[], models: Model[]): Promise<{ etag: string, version: string }> {

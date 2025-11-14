@@ -9,7 +9,7 @@ binding = "REGISTRY"
 id = "623d8b76dab74f37b63d66cbe55588c4"
 
 [triggers]
-crons = [ "0 2 * * *" ]
+crons = [ "*/5 * * * *" ]
 
 [observability]
 enabled = false
