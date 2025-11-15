@@ -20,6 +20,10 @@
     "./search": {
       "types": "./dist/search.d.ts",
       "default": "./dist/search.mjs"
+    },
+    "./custom": {
+      "types": "./dist/custom.d.ts",
+      "default": "./dist/custom.mjs"
     }
   },
   "scripts": {

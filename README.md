@@ -74,6 +74,49 @@ const { data: model } = await registry.getModel('openai', 'gpt-5')
 
 See the [Client Library Documentation](./packages/client/README.md) for more details.
 
+### Custom providers and models
+
+The registry includes some **official overrides** (e.g. Azure, Groq, Cerebras) on the server side, but you can also add your **own** providers and models in your app.
+
+- **Server-side** (this repo): official overrides live in `packages/server/src/custom` and are merged into the manifest during the transform step.
+- **Client-side** (your app): you can take the manifest and apply your own overrides at runtime using the shared helper.
+
+Example: add **OpenRouter** as a custom provider, and a couple of OpenRouter models, on the client:
+
+```typescript
+import type { ModelOverride, ProviderOverride } from '@rttnd/llm'
+import { applyOverrides, createRegistry } from '@rttnd/llm'
+
+const registry = createRegistry({ baseUrl: 'https://llm.your-subdomain.workers.dev' })
+
+const openRouterProvider: ProviderOverride = {
+  value: 'openrouter',
+  name: 'OpenRouter',
+  website: 'https://openrouter.ai/',
+  status: 'active',
+}
+
+const openRouterModels: ModelOverride[] = [
+  {
+    provider: 'openrouter',
+    value: 'openai/gpt-5-pro',
+    inheritFrom: { provider: 'openai', value: 'gpt-5-1' }, // reuse AA metrics/capabilities
+  },
+  {
+    provider: 'openrouter',
+    value: 'openai/gpt-oss-20b:free',
+    inheritFrom: { provider: 'openai', value: 'gpt-oss-20b' },
+    pricing: { input: 0, output: 0, blended: 0 }, // mark as free on OpenRouter
+  },
+]
+
+const { data: manifest } = await registry.getManifest()
+const { providers, models } = applyOverrides(manifest.providers, manifest.models, {
+  providers: [openRouterProvider],
+  models: openRouterModels,
+})
+```
+
 ## API Endpoints
 
 ### GET `/v1/manifest`

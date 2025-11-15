@@ -6,6 +6,7 @@ export default defineConfig({
     'src/types.ts',
     'src/registry.ts',
     'src/search.ts',
+    'src/custom.ts',
   ],
   dts: {
     tsgo: true,

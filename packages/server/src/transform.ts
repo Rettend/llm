@@ -1,5 +1,7 @@
 import type { AAModel, AAResponse, Manifest, Model, Provider } from '@rttnd/llm-shared'
+import { applyOverrides } from '@rttnd/llm-shared/custom'
 import { getModelRegistry } from '@rttnd/llm-shared/registry'
+import { OFFICIAL_MODEL_OVERRIDES, OFFICIAL_PROVIDER_OVERRIDES } from './custom/index'
 import { scoreIq, scoreSpeed } from './scoring'
 
 const PROVIDER_MAP: Record<string, { value: string, name: string, keyPlaceholder?: string, website?: string }> = {
@@ -150,12 +152,12 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
 
   const aaData = await response.json() as AAResponse
 
-  const models = aaData.data.map(transformAAModel)
+  const aaModels = aaData.data.map(transformAAModel)
 
-  const providerSet = new Set<string>()
-  models.forEach(m => providerSet.add(m.provider))
+  const aaProviderSet = new Set<string>()
+  aaModels.forEach(m => aaProviderSet.add(m.provider))
 
-  const providerList: Provider[] = Array.from(providerSet)
+  const aaProviderList: Provider[] = Array.from(aaProviderSet)
     .map((value) => {
       const mapped = PROVIDER_MAP[value]
       return {
@@ -166,7 +168,13 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
         status: 'active' as const,
       }
     })
-  const sortedProviders = sortProviders(providerList)
+
+  const { providers, models } = applyOverrides(aaProviderList, aaModels, {
+    providers: OFFICIAL_PROVIDER_OVERRIDES,
+    models: OFFICIAL_MODEL_OVERRIDES,
+  })
+
+  const sortedProviders = sortProviders(providers)
   const sortedModels = sortModels(models)
 
   const generatedAt = new Date().toISOString()
