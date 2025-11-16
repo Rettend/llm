@@ -48,8 +48,8 @@ function getRegistryKeys(): string[] {
   return keys
 }
 
-async function diffModels(options: { showMissingFromRegistry?: boolean } = {}) {
-  const { showMissingFromRegistry = false } = options
+async function diffModels(options: { showMissingFromRegistry?: boolean, writeToRegistry?: boolean } = {}) {
+  const { showMissingFromRegistry = false, writeToRegistry = false } = options
   const hasCurrent = await fileExists(CURRENT_MODELS_PATH)
   if (!hasCurrent) {
     console.error(`❌ ${CURRENT_MODELS_PATH} not found. Make sure you've pulled the latest public data.`)
@@ -113,28 +113,96 @@ async function diffModels(options: { showMissingFromRegistry?: boolean } = {}) {
     return
   }
 
-  if (newKeys.length) {
+  if (newKeys.length && !writeToRegistry) {
     console.log('📥 New models since baseline:')
     for (const key of newKeys) {
       const model = currentMap.get(key)!
       const displayName = model.name ? ` — ${model.name}` : ''
       console.log(`- ${model.provider}/${model.value}${displayName}`)
     }
-    console.log()
+  }
 
-    console.log('🔧 Registry snippet templates (per model, paste into `packages/shared/src/registry.ts`):')
-    console.log()
+  if (newKeys.length && writeToRegistry) {
+    const registryPath = 'packages/shared/src/registry.ts'
+    const registrySource = await fs.readFile(registryPath, 'utf8')
+
+    const insertionTarget = 'export const MODEL_REGISTRY = defineModelRegistry({'
+    const insertionIndex = registrySource.indexOf(insertionTarget)
+    if (insertionIndex === -1)
+      throw new Error(`Could not find MODEL_REGISTRY definition in ${registryPath}`)
+
+    const before = registrySource.slice(0, insertionIndex + insertionTarget.length)
+    const after = registrySource.slice(insertionIndex + insertionTarget.length)
+
+    const providerGroups = new Map<string, PublicModel[]>()
     for (const key of newKeys) {
       const model = currentMap.get(key)!
-      const displayName = model.name ? ` — ${model.name}` : ''
-      console.log(`// ${model.provider}/${model.value}${displayName}`)
-      console.log(`'${model.value}': {`)
-      console.log(`  status: 'active', // TODO: active | beta | deprecated`)
-      console.log('  contextWindow: 128_000, // TODO: fill in from provider docs')
-      console.log('  capabilities: _(text), // TODO: add vision/reasoning/toolUse/json/audio as needed')
-      console.log('},')
-      console.log()
+      const list = providerGroups.get(model.provider) ?? []
+      list.push(model)
+      providerGroups.set(model.provider, list)
     }
+
+    const lines: string[] = []
+    lines.push(before)
+
+    const indentProvider = '  '
+    const indentModel = '    '
+
+    const closeIndex = after.lastIndexOf('})')
+    if (closeIndex === -1)
+      throw new Error(`Could not locate closing of MODEL_REGISTRY in ${registryPath}`)
+
+    let bodyBeforeClose = after.slice(0, closeIndex)
+    const bodyAfterClose = after.slice(closeIndex)
+
+    // Now append new entries (merge into existing providers when possible)
+    for (const [provider, models] of providerGroups) {
+      const providerKey = `\n  '${provider}': {\n`
+      const providerIndex = bodyBeforeClose.indexOf(providerKey)
+
+      if (providerIndex !== -1) {
+        // Provider already exists: insert models before its closing `  },`
+        const providerBlockEnd = bodyBeforeClose.indexOf('\n  },', providerIndex)
+        if (providerBlockEnd === -1)
+          continue
+
+        const beforeProviderClose = bodyBeforeClose.slice(0, providerBlockEnd)
+        const afterProviderClose = bodyBeforeClose.slice(providerBlockEnd)
+
+        const providerLines: string[] = []
+        providerLines.push(beforeProviderClose)
+        for (const model of models) {
+          providerLines.push(`\n${indentModel}'${model.value}': {`)
+          providerLines.push(`${indentModel}  contextWindow: 100_000,`)
+          providerLines.push(`${indentModel}  capabilities: _(text),`)
+          providerLines.push(`${indentModel}},`)
+        }
+        providerLines.push(afterProviderClose)
+
+        bodyBeforeClose = providerLines.join('')
+      }
+      else {
+        // New provider: append a fresh block before the final close.
+        const providerLines: string[] = []
+        providerLines.push(`\n${indentProvider}'${provider}': {`)
+        for (const model of models) {
+          providerLines.push(`\n${indentModel}'${model.value}': {`)
+          providerLines.push(`${indentModel}  contextWindow: 100_000,`)
+          providerLines.push(`${indentModel}  capabilities: _(text),`)
+          providerLines.push(`${indentModel}},`)
+        }
+        providerLines.push(`\n${indentProvider}},`)
+
+        bodyBeforeClose += providerLines.join('')
+      }
+    }
+
+    lines.push(bodyBeforeClose)
+    lines.push(bodyAfterClose)
+
+    await fs.writeFile(registryPath, lines.join(''), 'utf8')
+
+    console.log(`✏️  Wrote ${newKeys.length} missing models into ${registryPath}`)
   }
 
   if (removedKeys.length) {
@@ -192,11 +260,12 @@ async function main() {
   const args = new Set(process.argv.slice(2))
   const shouldUpdateBaseline = args.has('--update-baseline') || args.has('-u')
   const showMissingFromRegistry = args.has('--missing-from-registry') || args.has('-m')
+  const writeToRegistry = args.has('--write') || args.has('-w')
 
   if (shouldUpdateBaseline)
     await updateBaseline()
   else
-    await diffModels({ showMissingFromRegistry })
+    await diffModels({ showMissingFromRegistry, writeToRegistry })
 }
 
 main().catch((error) => {

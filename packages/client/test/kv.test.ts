@@ -63,14 +63,14 @@ describe('kVRegistry', () => {
 
     const providerModels = await registry.getProviderModels('openai')
     expect(providerModels).toHaveLength(1)
-    expect(providerModels[0].value).toBe('gpt-5')
+    expect(providerModels[0]?.value).toBe('gpt-5')
 
     const specificModel = await registry.getModel('anthropic', 'claude-4')
     expect(specificModel?.name).toBe('Claude 4')
 
     const visionModels = await registry.searchModels({ capability: 'vision' })
     expect(visionModels).toHaveLength(1)
-    expect(visionModels[0].value).toBe('gpt-5')
+    expect(visionModels[0]?.value).toBe('gpt-5')
   })
 
   it('handles missing or invalid manifest gracefully', async () => {
