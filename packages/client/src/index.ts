@@ -6,6 +6,8 @@ import { treaty } from '@elysiajs/eden'
 import { filterModels } from '@rttnd/llm-shared'
 import { createStorage } from 'unstorage'
 
+export { createKVRegistry, KVRegistry } from './kv'
+export type { KVRegistryBinding, KVRegistryOptions } from './kv'
 export * from '@rttnd/llm-shared'
 
 export type CacheMode = 'auto' | 'localStorage' | 'fs' | 'none'

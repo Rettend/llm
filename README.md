@@ -74,6 +74,26 @@ const { data: model } = await registry.getModel('openai', 'gpt-5')
 
 See the [Client Library Documentation](./packages/client/README.md) for more details.
 
+### Direct KV access
+
+When your app already runs on Cloudflare Workers you can skip HTTP requests entirely and read the manifest straight from the shared KV namespace:
+
+```ts
+import { createKVRegistry } from '@rttnd/llm'
+
+export default {
+  async fetch(request, env) {
+    const registry = createKVRegistry({ kv: env.REGISTRY })
+    const models = await registry.getModels()
+    return Response.json(models)
+  },
+}
+```
+
+- Works inside Server Functions with meta frameworks that use Nitro.
+- Override `manifestKey` if you store multiple manifests in the same namespace.
+- KV namespace IDs are safe to keep in your repo; they only work inside accounts that bind them via Cloudflare dashboard.
+
 ### Custom providers and models
 
 The registry includes some **official overrides** (e.g. Azure, Groq, Cerebras) on the server side, but you can also add your **own** providers and models in your app.

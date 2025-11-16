@@ -20,6 +20,26 @@ const registry = createRegistry({
 const { data: models, error } = await registry.getModels()
 ```
 
+## Direct KV access
+
+When your app already runs on Cloudflare Workers you can skip HTTP requests entirely and read the manifest straight from the shared KV namespace:
+
+```ts
+import { createKVRegistry } from '@rttnd/llm'
+
+export default {
+  async fetch(request, env) {
+    const registry = createKVRegistry({ kv: env.REGISTRY })
+    const models = await registry.getModels()
+    return Response.json(models)
+  },
+}
+```
+
+- Works inside Server Functions with meta frameworks that use Nitro.
+- Override `manifestKey` if you store multiple manifests in the same namespace.
+- KV namespace IDs are safe to keep in your repo; they only work inside accounts that bind them via Cloudflare dashboard.
+
 ## Config
 
 ```typescript
