@@ -34,13 +34,13 @@
         "@elysiajs/cors": "^1.4.0",
         "@elysiajs/eden": "^1.4.4",
         "@elysiajs/openapi": "^1.4.11",
+        "@rttnd/llm-shared": "workspace:*",
         "elysia": "^1.4.13",
         "unstorage": "^1.17.2",
         "zod": "^4.1.12"
       },
       "prod-inlined": {
-        "@rttnd/llm-server": "workspace:*",
-        "@rttnd/llm-shared": "workspace:*"
+        "@rttnd/llm-server": "workspace:*"
       }
     }
   },
@@ -57,7 +57,7 @@
     "report": "bun run scripts/report.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
     "update": "taze -wr latest",
-    "release": "bumpp packages/client/package.json && bun run build && bun run --cwd packages/client release"
+    "release": "bumpp packages/client/package.json packages/shared/package.json packages/server/package.json && bun run build && bun run --cwd packages/client release && bun run --cwd packages/shared release"
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "catalog:dev",
