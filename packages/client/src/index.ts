@@ -1,6 +1,7 @@
 import type { app } from '@rttnd/llm-server'
 import type { Manifest, Model, ModelSearchQuery, Provider } from '@rttnd/llm-shared'
 import type { Storage } from 'unstorage'
+import type { LLMClientResponse } from './response'
 import process from 'node:process'
 import { treaty } from '@elysiajs/eden'
 import { filterModels } from '@rttnd/llm-shared'
@@ -8,6 +9,7 @@ import { createStorage } from 'unstorage'
 
 export { createKVRegistry, KVRegistry } from './kv'
 export type { KVRegistryBinding, KVRegistryOptions } from './kv'
+export type { LLMClientResponse } from './response'
 export * from '@rttnd/llm-shared'
 
 export type CacheMode = 'auto' | 'localStorage' | 'fs' | 'none'
@@ -51,12 +53,6 @@ export interface LLMClientConfig {
    * Callback when an error occurs
    */
   onError?: (error: Error) => void
-}
-
-export interface LLMClientResponse<T> {
-  data: T | null
-  error: Error | null
-  cached: boolean
 }
 
 interface PersistedMeta {

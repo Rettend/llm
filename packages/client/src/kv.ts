@@ -1,4 +1,5 @@
 import type { Manifest, Model, ModelSearchQuery, Provider } from '@rttnd/llm-shared'
+import type { LLMClientResponse } from './response'
 import { filterModels } from '@rttnd/llm-shared'
 
 export interface KVRegistryBinding {
@@ -22,54 +23,68 @@ export class KVRegistry {
     this.manifestKey = options.manifestKey ?? 'manifest'
   }
 
-  async getManifest(): Promise<Manifest | null> {
-    return this.readManifest()
+  async getManifest(): Promise<LLMClientResponse<Manifest>> {
+    return this.createResponse(() => this.readManifestOrThrow())
   }
 
-  async getProviders(): Promise<Provider[]> {
-    const manifest = await this.readManifest()
-    return manifest?.providers ?? []
+  async getProviders(): Promise<LLMClientResponse<Provider[]>> {
+    return this.withManifest(manifest => manifest.providers)
   }
 
-  async getModels(): Promise<Model[]> {
-    const manifest = await this.readManifest()
-    return manifest?.models ?? []
+  async getModels(): Promise<LLMClientResponse<Model[]>> {
+    return this.withManifest(manifest => manifest.models)
   }
 
-  async getProviderModels(provider: string): Promise<Model[]> {
-    const models = await this.getModels()
-    if (!models.length)
-      return []
-
-    return models.filter(model => model.provider === provider)
+  async getProviderModels(provider: string): Promise<LLMClientResponse<Model[]>> {
+    return this.withManifest(manifest => manifest.models.filter(model => model.provider === provider))
   }
 
-  async getModel(provider: string, value: string): Promise<Model | null> {
-    const models = await this.getModels()
-    if (!models.length)
-      return null
+  async getModel(provider: string, value: string): Promise<LLMClientResponse<Model>> {
+    return this.withManifest((manifest) => {
+      const model = manifest.models.find(item => item.provider === provider && item.value === value)
+      if (!model)
+        throw new Error(`Model ${value} not found for provider ${provider}`)
 
-    return models.find(model => model.provider === provider && model.value === value) ?? null
+      return model
+    })
   }
 
-  async searchModels(query: ModelSearchQuery): Promise<Model[]> {
-    const models = await this.getModels()
-    if (!models.length)
-      return []
-
-    return filterModels(models, query)
+  async searchModels(query: ModelSearchQuery): Promise<LLMClientResponse<Model[]>> {
+    return this.withManifest(manifest => filterModels(manifest.models, query))
   }
 
-  private async readManifest(): Promise<Manifest | null> {
+  private async withManifest<T>(project: (manifest: Manifest) => T | Promise<T>): Promise<LLMClientResponse<T>> {
+    return this.createResponse(async () => {
+      const manifest = await this.readManifestOrThrow()
+      return project(manifest)
+    })
+  }
+
+  private async createResponse<T>(execute: () => Promise<T>): Promise<LLMClientResponse<T>> {
+    try {
+      const data = await execute()
+      return { data, error: null, cached: true }
+    }
+    catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error(String(error)),
+        cached: false,
+      }
+    }
+  }
+
+  private async readManifestOrThrow(): Promise<Manifest> {
     const stored = await this.kv.get(this.manifestKey, 'text')
     if (!stored)
-      return null
+      throw new Error(`Manifest not found in KV (key: ${this.manifestKey})`)
 
     try {
       return JSON.parse(stored) as Manifest
     }
-    catch {
-      return null
+    catch (error) {
+      const parseError = error instanceof Error ? error : new Error(String(error))
+      throw new Error('Manifest in KV is not valid JSON', { cause: parseError })
     }
   }
 }

@@ -84,7 +84,10 @@ import { createKVRegistry } from '@rttnd/llm'
 export default {
   async fetch(request, env) {
     const registry = createKVRegistry({ kv: env.REGISTRY })
-    const models = await registry.getModels()
+    const { data: models, error } = await registry.getModels()
+    if (error)
+      throw error
+
     return Response.json(models)
   },
 }

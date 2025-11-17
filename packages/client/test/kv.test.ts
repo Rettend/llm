@@ -53,36 +53,47 @@ describe('kVRegistry', () => {
     const registry = createKVRegistry({ kv })
 
     const manifest = await registry.getManifest()
-    expect(manifest?.version).toBe('v1.kv-test')
+    expect(manifest.data?.version).toBe('v1.kv-test')
+    expect(manifest.error).toBeNull()
 
     const providers = await registry.getProviders()
-    expect(providers).toHaveLength(2)
+    expect(providers.data).toHaveLength(2)
 
     const models = await registry.getModels()
-    expect(models).toHaveLength(2)
+    expect(models.data).toHaveLength(2)
 
     const providerModels = await registry.getProviderModels('openai')
-    expect(providerModels).toHaveLength(1)
-    expect(providerModels[0]?.value).toBe('gpt-5')
+    expect(providerModels.data).toHaveLength(1)
+    expect(providerModels.data?.[0]?.value).toBe('gpt-5')
 
     const specificModel = await registry.getModel('anthropic', 'claude-4')
-    expect(specificModel?.name).toBe('Claude 4')
+    expect(specificModel.data?.name).toBe('Claude 4')
 
     const visionModels = await registry.searchModels({ capability: 'vision' })
-    expect(visionModels).toHaveLength(1)
-    expect(visionModels[0]?.value).toBe('gpt-5')
+    expect(visionModels.data).toHaveLength(1)
+    expect(visionModels.data?.[0]?.value).toBe('gpt-5')
   })
 
   it('handles missing or invalid manifest gracefully', async () => {
     const mock = createMockKV(null)
     const registry = createKVRegistry({ kv: mock.kv })
 
-    expect(await registry.getManifest()).toBeNull()
-    expect(await registry.getProviders()).toEqual([])
-    expect(await registry.getModels()).toEqual([])
+    const emptyManifest = await registry.getManifest()
+    expect(emptyManifest.data).toBeNull()
+    expect(emptyManifest.error).toBeInstanceOf(Error)
+
+    const providers = await registry.getProviders()
+    expect(providers.data).toBeNull()
+    expect(providers.error).toBeInstanceOf(Error)
+
+    const models = await registry.getModels()
+    expect(models.data).toBeNull()
+    expect(models.error).toBeInstanceOf(Error)
 
     mock.setValue('not-json')
-    expect(await registry.getManifest()).toBeNull()
+    const invalidManifest = await registry.getManifest()
+    expect(invalidManifest.data).toBeNull()
+    expect(invalidManifest.error).toBeInstanceOf(Error)
   })
 
   it('supports custom manifest keys', async () => {
@@ -97,6 +108,6 @@ describe('kVRegistry', () => {
 
     const manifest = await registry.getManifest()
     expect(mockGet).toHaveBeenCalledWith('custom-key', 'text')
-    expect(manifest?.models).toHaveLength(2)
+    expect(manifest.data?.models).toHaveLength(2)
   })
 })
