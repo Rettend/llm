@@ -40,7 +40,8 @@
         "zod": "^4.1.12"
       },
       "prod-inlined": {
-        "@rttnd/llm-server": "workspace:*"
+        "@rttnd/llm-server": "workspace:*",
+        "@rttnd/llm-shared": "workspace:*"
       }
     }
   },
