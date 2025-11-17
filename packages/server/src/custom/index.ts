@@ -8,19 +8,19 @@ export const OFFICIAL_PROVIDER_OVERRIDES: ProviderOverride[] = [
     value: 'groq',
     name: 'Groq',
     website: 'https://console.groq.com/keys',
-    status: 'active',
+    status: 'latest',
   },
   {
     value: 'cerebras',
     name: 'Cerebras',
     website: 'https://cloud.cerebras.ai/',
-    status: 'active',
+    status: 'latest',
   },
   {
     value: 'azure',
     name: 'Azure',
     website: 'https://portal.azure.com/',
-    status: 'active',
+    status: 'latest',
   },
 ]
 

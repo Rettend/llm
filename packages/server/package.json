@@ -15,7 +15,7 @@
     "cf:tail": "wrangler tail",
     "lint": "eslint . --fix",
     "check": "tsgo --noEmit",
-    "test": "vitest",
+    "test": "bun test",
     "test:ui": "vitest --ui"
   },
   "dependencies": {

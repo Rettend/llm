@@ -51,7 +51,7 @@
     "cf:dev": "bun run --cwd packages/server cf:dev",
     "cf:tail": "bun run --cwd packages/server cf:tail",
     "lint": "eslint . --fix",
-    "test": "vitest",
+    "test": "bun test",
     "test:ui": "vitest --ui",
     "seed": "bun run scripts/seed.ts",
     "report": "bun run scripts/report.ts",

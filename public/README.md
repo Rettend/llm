@@ -47,7 +47,7 @@ curl https://raw.githubusercontent.com/Rettend/llm/main/public/version.json
     "name": "OpenAI",
     "keyPlaceholder": "sk-...",
     "website": "https://platform.openai.com/api-keys",
-    "status": "active"
+    "status": "latest"
   }
 ]
 ```
@@ -64,7 +64,7 @@ curl https://raw.githubusercontent.com/Rettend/llm/main/public/version.json
     "iq": 5,
     "speed": 3,
     "pricing": 3.44,
-    "status": "active"
+    "status": "latest"
   }
 ]
 ```

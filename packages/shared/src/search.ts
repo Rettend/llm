@@ -8,7 +8,7 @@ export interface ModelSearchQuery {
   name?: string
   provider?: string
   capability?: CapabilityKey | CapabilityKey[]
-  status?: ModelStatus
+  status?: ModelStatus | ModelStatus[]
   releaseDateFrom?: string | Date
   releaseDateTo?: string | Date
   minIq?: number
@@ -40,8 +40,10 @@ export function filterModels(models: Model[], query: ModelSearchQuery): Model[] 
     filtered = filtered.filter(model => capabilityFilters.every(capabilityKey => Boolean(model.capabilities?.[capabilityKey])))
   }
 
-  if (query.status)
-    filtered = filtered.filter(model => model.status === query.status)
+  if (query.status) {
+    const statusFilters = Array.isArray(query.status) ? query.status : [query.status]
+    filtered = filtered.filter(model => Boolean(model.status && statusFilters.includes(model.status)))
+  }
 
   const releaseFrom = normalizeDate(query.releaseDateFrom)
   const releaseTo = normalizeDate(query.releaseDateTo)

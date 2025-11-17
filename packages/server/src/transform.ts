@@ -1,4 +1,4 @@
-import type { AAModel, AAResponse, Manifest, Model, Provider } from '@rttnd/llm-shared'
+import type { AAModel, AAResponse, Manifest, Model, Provider, Status } from '@rttnd/llm-shared'
 import { applyOverrides } from '@rttnd/llm-shared/custom'
 import { getModelRegistry } from '@rttnd/llm-shared/registry'
 import { OFFICIAL_MODEL_OVERRIDES, OFFICIAL_PROVIDER_OVERRIDES } from './custom/index'
@@ -49,6 +49,30 @@ const PROVIDER_MAP: Record<string, { value: string, name: string, keyPlaceholder
   },
 }
 
+const PREVIEW_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+
+function isWithinPreviewWindow(releaseDate?: string): boolean {
+  if (!releaseDate)
+    return false
+
+  const parsed = new Date(releaseDate)
+  if (Number.isNaN(parsed.getTime()))
+    return false
+
+  const diff = Date.now() - parsed.getTime()
+  return diff >= 0 && diff <= PREVIEW_WINDOW_MS
+}
+
+function resolveModelStatus(registryStatus?: Status, releaseDate?: string): Status {
+  if (registryStatus)
+    return registryStatus
+
+  if (isWithinPreviewWindow(releaseDate))
+    return 'preview'
+
+  return 'all'
+}
+
 function getProviderValue(creatorSlug: string): string {
   return PROVIDER_MAP[creatorSlug]?.value ?? creatorSlug
 }
@@ -87,7 +111,7 @@ function transformAAModel(aaModel: AAModel): Model {
     },
 
     releaseDate: aaModel.release_date,
-    status: registryEntry?.status ?? 'active',
+    status: resolveModelStatus(registryEntry?.status, aaModel.release_date),
   }
 }
 
@@ -165,7 +189,7 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
         name: mapped?.name ?? value,
         keyPlaceholder: mapped?.keyPlaceholder,
         website: mapped?.website,
-        status: 'active' as const,
+        status: 'latest' as const,
       }
     })
 

@@ -113,7 +113,7 @@ const openRouterProvider: ProviderOverride = {
   value: 'openrouter',
   name: 'OpenRouter',
   website: 'https://openrouter.ai/',
-  status: 'active',
+  status: 'latest',
 }
 
 const openRouterModels: ModelOverride[] = [
@@ -168,7 +168,7 @@ Returns list of all providers.
     "name": "OpenAI",
     "keyPlaceholder": "sk-...",
     "website": "https://platform.openai.com/api-keys",
-    "status": "active"
+    "status": "latest"
   }
 ]
 ```
@@ -209,6 +209,7 @@ Search models with query parameters rather than downloading the full manifest.
 - `capability` - Require a capability (`text`, `vision`, `reasoning`, `toolUse`, `json`, `audio`)
 - `minIq` - Minimum IQ score (0-5)
 - `minSpeed` - Minimum speed score (0-5)
+- `status` - Filter by one or more statuses (`latest`, `preview`, `all`)
 
 **Response:**
 

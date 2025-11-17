@@ -63,7 +63,7 @@ export const GROQ_MODEL_OVERRIDES: ModelOverride[] = [
       provider: 'meta',
       value: 'llama-4-maverick',
     },
-    status: 'beta',
+    status: 'preview',
     pricing: {
       input: 0.20,
       output: 0.60,
@@ -81,7 +81,7 @@ export const GROQ_MODEL_OVERRIDES: ModelOverride[] = [
       provider: 'meta',
       value: 'llama-4-scout',
     },
-    status: 'beta',
+    status: 'preview',
     pricing: {
       input: 0.11,
       output: 0.34,
@@ -99,7 +99,7 @@ export const GROQ_MODEL_OVERRIDES: ModelOverride[] = [
       provider: 'moonshotai',
       value: 'kimi-k2-0905',
     },
-    status: 'beta',
+    status: 'preview',
     pricing: {
       input: 1.0,
       output: 3.0,

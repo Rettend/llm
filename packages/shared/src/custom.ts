@@ -116,7 +116,7 @@ export function applyOverrides(
         name: override.name ?? override.value,
         keyPlaceholder: override.keyPlaceholder,
         website: override.website,
-        status: override.status ?? 'active',
+        status: override.status ?? 'latest',
       })
     }
   }
@@ -161,6 +161,7 @@ export function applyOverrides(
         value: override.value,
         name,
         alias: override.alias ?? name.split('(')[0]?.trim(),
+        status: 'latest',
       }
     }
 

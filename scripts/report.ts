@@ -60,6 +60,8 @@ async function diffModels(options: { showMissingFromRegistry?: boolean, writeToR
   const baselineExists = await fileExists(BASELINE_MODELS_PATH)
   const baselineModels = baselineExists ? await loadModels(BASELINE_MODELS_PATH) : []
 
+  const registryKeySet = new Set(getRegistryKeys())
+
   const currentMap = new Map<string, PublicModel>()
   for (const model of currentModels)
     currentMap.set(keyOf(model), model)
@@ -86,12 +88,19 @@ async function diffModels(options: { showMissingFromRegistry?: boolean, writeToR
 
   const missingFromCurrent: string[] = []
   if (showMissingFromRegistry) {
-    const registryKeys = getRegistryKeys()
-    for (const key of registryKeys) {
+    for (const key of registryKeySet) {
       if (!currentKeys.has(key))
         missingFromCurrent.push(key)
     }
   }
+
+  const statusHistogram = new Map<string, number>()
+  for (const model of currentModels) {
+    const status = model.status ?? 'unknown'
+    statusHistogram.set(status, (statusHistogram.get(status) ?? 0) + 1)
+  }
+
+  const previewWithoutRegistry = currentModels.filter(model => model.status === 'preview' && !registryKeySet.has(keyOf(model)))
 
   console.log('🧾 Model changelog (current public data vs curated baseline)')
   console.log()
@@ -108,9 +117,35 @@ async function diffModels(options: { showMissingFromRegistry?: boolean, writeToR
   console.log(`Removed models:  ${removedKeys.length}`)
   console.log()
 
+  if (currentModels.length) {
+    const orderedStatuses = ['latest', 'preview', 'all']
+    console.log('Status breakdown:')
+    for (const status of orderedStatuses) {
+      const count = statusHistogram.get(status) ?? 0
+      console.log(`- ${status.padEnd(7)} ${count.toString().padStart(3)} models`)
+    }
+    const unknownStatuses = Array.from(statusHistogram.keys()).filter(status => !orderedStatuses.includes(status))
+    if (unknownStatuses.length) {
+      for (const status of unknownStatuses) {
+        const count = statusHistogram.get(status) ?? 0
+        console.log(`- ${status.padEnd(7)} ${count.toString().padStart(3)} models`)
+      }
+    }
+    console.log()
+  }
+
   if (!newKeys.length && !removedKeys.length && !missingFromCurrent.length) {
     console.log('✅ No changes since the last baseline.')
     return
+  }
+
+  if (previewWithoutRegistry.length) {
+    console.log('🕒 Preview models missing curated registry entries:')
+    for (const model of previewWithoutRegistry) {
+      const displayName = model.name ? ` — ${model.name}` : ''
+      console.log(`- ${model.provider}/${model.value}${displayName}`)
+    }
+    console.log()
   }
 
   if (newKeys.length && !writeToRegistry) {

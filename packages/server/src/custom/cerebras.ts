@@ -45,7 +45,7 @@ export const CEREBRAS_MODEL_OVERRIDES: ModelOverride[] = [
       provider: 'alibaba',
       value: 'qwen3-235b-a22b-2507',
     },
-    status: 'beta',
+    status: 'preview',
     pricing: {
       input: 0.60,
       output: 1.20,
@@ -63,7 +63,7 @@ export const CEREBRAS_MODEL_OVERRIDES: ModelOverride[] = [
       provider: 'zai',
       value: 'glm-4-6',
     },
-    status: 'beta',
+    status: 'preview',
     pricing: {
       input: 2.25,
       output: 2.75,

@@ -25,13 +25,24 @@ describe('filterModels', () => {
 
   it('filters by model status', () => {
     const models = [
-      makeModel({ id: 'active', status: 'active' }),
-      makeModel({ id: 'beta', status: 'beta' }),
+      makeModel({ id: 'latest', status: 'latest' }),
+      makeModel({ id: 'preview', status: 'preview' }),
     ]
 
-    const result = filterModels(models, { status: 'active' })
+    const result = filterModels(models, { status: 'latest' })
     expect(result).toHaveLength(1)
-    expect(result[0]?.id).toBe('active')
+    expect(result[0]?.id).toBe('latest')
+  })
+
+  it('filters by multiple statuses when array is provided', () => {
+    const models = [
+      makeModel({ id: 'latest', status: 'latest' }),
+      makeModel({ id: 'preview', status: 'preview' }),
+      makeModel({ id: 'all', status: 'all' }),
+    ]
+
+    const result = filterModels(models, { status: ['latest', 'preview'] })
+    expect(result.map(model => model.id)).toEqual(['latest', 'preview'])
   })
 
   it('filters by release date range (string inputs)', () => {

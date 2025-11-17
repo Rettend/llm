@@ -35,7 +35,7 @@
   "scripts": {
     "build": "tsdown",
     "check": "tsgo --noEmit",
-    "test": "vitest",
+    "test": "bun test",
     "release": "bun publish"
   },
   "dependencies": {

@@ -1,4 +1,6 @@
-export type ModelStatus = 'active' | 'beta' | 'deprecated'
+import type { Status } from './types'
+
+export type ModelStatus = Status
 
 export interface ModelRegistry {
   status: ModelStatus
@@ -81,7 +83,7 @@ function defineModelRegistry(map: FlexibleRegistryMap): RegistryMap {
       out[provider][model] = {
         contextWindow: def.contextWindow,
         capabilities: toFlags(def.capabilities),
-        status: def.status ?? 'active',
+        status: def.status ?? 'latest',
       }
     }
   }
@@ -93,11 +95,11 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'gpt-5-1': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-1-non-reasoning': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5': { status: 'deprecated', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-medium': { status: 'deprecated', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'o3': { status: 'deprecated', contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5': { status: 'all', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-medium': { status: 'all', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'o3': { status: 'all', contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-low': { status: 'deprecated', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-low': { status: 'all', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
@@ -106,7 +108,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'gpt-oss-120b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-20b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-chatgpt': { status: 'deprecated', contextWindow: 128_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-chatgpt': { status: 'all', contextWindow: 128_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-nano-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },

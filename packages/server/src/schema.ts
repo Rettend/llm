@@ -1,9 +1,9 @@
 import { t } from 'elysia'
 
-export const providerStatusSchema = t.Union([
-  t.Literal('active'),
-  t.Literal('beta'),
-  t.Literal('deprecated'),
+export const statusSchema = t.Union([
+  t.Literal('latest'),
+  t.Literal('preview'),
+  t.Literal('all'),
 ])
 
 export const providerSchema = t.Object({
@@ -11,7 +11,7 @@ export const providerSchema = t.Object({
   name: t.String({ description: 'Human-readable provider name' }),
   keyPlaceholder: t.Optional(t.String({ description: 'Example format for API keys (e.g., "sk-...")' })),
   website: t.Optional(t.String({ description: 'URL to get API keys' })),
-  status: t.Optional(providerStatusSchema),
+  status: t.Optional(statusSchema),
 })
 
 export const capabilitySchema = t.Object({
@@ -76,7 +76,7 @@ export const modelSchema = t.Object({
   metrics: t.Optional(metricsSchema),
   pricing: t.Optional(pricingSchema),
   releaseDate: t.Optional(t.String({ description: 'Model release date (ISO 8601)' })),
-  status: t.Optional(providerStatusSchema),
+  status: t.Optional(statusSchema),
   config: t.Optional(configSchema),
 })
 
@@ -95,7 +95,10 @@ export const modelSearchQuerySchema = t.Object({
     capabilityKeySchema,
     t.Array(capabilityKeySchema, { description: 'Require models that support every listed capability' }),
   ])),
-  status: t.Optional(providerStatusSchema),
+  status: t.Optional(t.Union([
+    statusSchema,
+    t.Array(statusSchema, { description: 'Multiple statuses allowed using repeated query params' }),
+  ])),
   releaseDateFrom: t.Optional(t.String({ description: 'Filter models released on/after this ISO date' })),
   releaseDateTo: t.Optional(t.String({ description: 'Filter models released on/before this ISO date' })),
   minIq: t.Optional(t.String({ description: 'Minimum IQ score (0-5)' })),

@@ -1,9 +1,11 @@
+export type Status = 'latest' | 'preview' | 'all'
+
 export interface Provider {
   value: string // 'openai', 'anthropic', etc.
   name: string // 'OpenAI', 'Anthropic'
   keyPlaceholder?: string // 'sk-...', 'sk-ant-...'
   website?: string // to get the api key
-  status?: 'active' | 'beta' | 'deprecated'
+  status?: Status
 }
 
 export interface Model {
@@ -45,7 +47,7 @@ export interface Model {
 
   // Metadata
   releaseDate?: string
-  status?: 'active' | 'beta' | 'deprecated'
+  status?: Status
 
   // AI SDK settings
   config?: {
