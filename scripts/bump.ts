@@ -1,12 +1,14 @@
 import { readFile, writeFile } from 'node:fs/promises'
 
 const sharedPkg = JSON.parse(await readFile('packages/shared/package.json', 'utf8'))
-const rootPkgPath = 'package.json'
-const rootPkg = JSON.parse(await readFile(rootPkgPath, 'utf8'))
+const semverRange = `^${sharedPkg.version}`
 
-const version = `^${sharedPkg.version}`
-if (!rootPkg.workspaces?.catalogs?.prod)
-  throw new Error('Missing prod catalog')
+async function updateDependency(path: string) {
+  const pkg = JSON.parse(await readFile(path, 'utf8'))
+  if (pkg.dependencies?.['@rttnd/llm-shared'])
+    pkg.dependencies['@rttnd/llm-shared'] = semverRange
+  await writeFile(path, `${JSON.stringify(pkg, null, 2)}\n`)
+}
 
-rootPkg.workspaces.catalogs.prod['@rttnd/llm-shared'] = version
-await writeFile(rootPkgPath, `${JSON.stringify(rootPkg, null, 2)}\n`)
+await updateDependency('packages/client/package.json')
+await updateDependency('packages/server/package.json')
