@@ -668,3 +668,180 @@ export class LLMClient {
 export function createRegistry(config: LLMClientConfig): LLMClient {
   return new LLMClient(config)
 }
+
+// TODO: until tsdown can inline types as well, we have to do this
+declare module '@rttnd/llm-shared' {
+  export type ModelStatus = 'active' | 'beta' | 'deprecated'
+
+  export interface Provider {
+    value: string
+    name: string
+    keyPlaceholder?: string
+    website?: string
+    status?: ModelStatus
+  }
+
+  export interface Model {
+    id: string
+    value: string
+    provider: string
+    name: string
+    alias?: string
+    capabilities?: {
+      text?: boolean
+      vision?: boolean
+      reasoning?: boolean
+      toolUse?: boolean
+      json?: boolean
+      audio?: boolean
+    }
+    iq?: 0 | 1 | 2 | 3 | 4 | 5
+    speed?: 0 | 1 | 2 | 3 | 4 | 5
+    metrics?: {
+      contextWindow?: number
+      intelligenceIndex?: number | null
+      codingIndex?: number | null
+      mathIndex?: number | null
+    }
+    pricing?: {
+      input?: number | null
+      output?: number | null
+      blended?: number | null
+    }
+    releaseDate?: string
+    status?: ModelStatus
+    config?: {
+      mode: 'auto' | 'json' | 'tool'
+    }
+  }
+
+  export interface Manifest {
+    version: string
+    etag: string
+    generatedAt: string
+    providers: Provider[]
+    models: Model[]
+  }
+
+  export interface AAModelCreator {
+    id: string
+    name: string
+    slug: string
+  }
+
+  export interface AAEvaluations {
+    artificial_analysis_intelligence_index?: number
+    artificial_analysis_coding_index?: number
+    artificial_analysis_math_index?: number
+    mmlu_pro?: number
+    gpqa?: number
+    hle?: number
+    livecodebench?: number
+    scicode?: number
+    math_500?: number | null
+    aime?: number | null
+    aime_25?: number
+    ifbench?: number
+    lcr?: number
+    terminalbench_hard?: number
+    tau2?: number
+  }
+
+  export interface AAPricing {
+    price_1m_blended_3_to_1?: number
+    price_1m_input_tokens?: number
+    price_1m_output_tokens?: number
+  }
+
+  export interface AAModel {
+    id: string
+    name: string
+    slug: string
+    release_date?: string
+    model_creator: AAModelCreator
+    evaluations?: AAEvaluations
+    pricing?: AAPricing
+    median_output_tokens_per_second?: number
+    median_time_to_first_token_seconds?: number
+    median_time_to_first_answer_token?: number
+  }
+
+  export interface AAResponse {
+    data: AAModel[]
+  }
+
+  export interface ModelSearchQuery {
+    name?: string
+    provider?: string
+    capability?: keyof NonNullable<Model['capabilities']>
+    minIq?: number
+    minSpeed?: number
+  }
+
+  export function filterModels(models: Model[], query: ModelSearchQuery): Model[]
+
+  export interface ProviderOverride {
+    value: string
+    name?: string
+    keyPlaceholder?: string
+    website?: string
+    status?: Provider['status']
+  }
+
+  export interface ModelOverride {
+    provider: string
+    value: string
+    inheritFrom?: {
+      provider: string
+      value: string
+    }
+    id?: string
+    name?: string
+    alias?: string
+    capabilities?: Model['capabilities']
+    iq?: Model['iq']
+    speed?: Model['speed']
+    metrics?: Partial<Model['metrics']>
+    pricing?: Model['pricing']
+    releaseDate?: Model['releaseDate']
+    status?: Model['status']
+    config?: Model['config']
+  }
+
+  export interface OverrideConfig {
+    providers?: ProviderOverride[]
+    models?: ModelOverride[]
+  }
+
+  export function applyOverrides(
+    baseProviders: Provider[],
+    baseModels: Model[],
+    overrides: OverrideConfig,
+  ): { providers: Provider[], models: Model[] }
+
+  export interface ModelRegistry {
+    status: ModelStatus
+    contextWindow: number
+    capabilities: {
+      text: boolean
+      vision?: boolean
+      reasoning?: boolean
+      toolUse?: boolean
+      json?: boolean
+      audio?: boolean
+    }
+  }
+
+  export type CapabilityKey = 'text' | 'vision' | 'reasoning' | 'toolUse' | 'json' | 'audio'
+
+  export const text: CapabilityKey
+  export const vision: CapabilityKey
+  export const reasoning: CapabilityKey
+  export const toolUse: CapabilityKey
+  export const json: CapabilityKey
+  export const audio: CapabilityKey
+
+  export const MODEL_REGISTRY: Record<string, Record<string, ModelRegistry>>
+
+  export function getModelRegistry(provider: string, modelValue: string): ModelRegistry | undefined
+}
