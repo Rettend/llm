@@ -111,10 +111,10 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'gpt-5-nano-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },
 
-  'moonshotai': { 'kimi-k2-thinking': {
-    contextWindow: 256_000,
-    capabilities: _(text, reasoning, toolUse, json),
-  }, 'kimi-k2-0905': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) } },
+  'moonshotai': {
+    'kimi-k2-thinking': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'kimi-k2-0905': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
 
   'xai': {
     'grok-4': { contextWindow: 256_000, capabilities: _(text, vision, reasoning, toolUse, json) },
