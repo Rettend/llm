@@ -1,7 +1,7 @@
 {
   "name": "@rttnd/llm",
   "type": "module",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "LLM Registry Client Library",
   "author": "Rettend <hi@rettend.me>",
   "license": "MIT",
