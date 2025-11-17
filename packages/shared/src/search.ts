@@ -1,11 +1,20 @@
 import type { Model } from './types'
 
+type CapabilityKey = keyof NonNullable<Model['capabilities']>
+type ModelStatus = Model['status']
+type ModelMode = NonNullable<NonNullable<Model['config']>['mode']>
+
 export interface ModelSearchQuery {
   name?: string
   provider?: string
-  capability?: keyof NonNullable<Model['capabilities']>
+  capability?: CapabilityKey | CapabilityKey[]
+  status?: ModelStatus
+  releaseDateFrom?: string | Date
+  releaseDateTo?: string | Date
   minIq?: number
   minSpeed?: number
+  minContextWindow?: number
+  mode?: ModelMode
 }
 
 /**
@@ -27,8 +36,27 @@ export function filterModels(models: Model[], query: ModelSearchQuery): Model[] 
     filtered = filtered.filter(model => model.provider === query.provider)
 
   if (query.capability) {
-    const capabilityKey = query.capability
-    filtered = filtered.filter(model => Boolean(model.capabilities?.[capabilityKey]))
+    const capabilityFilters = Array.isArray(query.capability) ? query.capability : [query.capability]
+    filtered = filtered.filter(model => capabilityFilters.every(capabilityKey => Boolean(model.capabilities?.[capabilityKey])))
+  }
+
+  if (query.status)
+    filtered = filtered.filter(model => model.status === query.status)
+
+  const releaseFrom = normalizeDate(query.releaseDateFrom)
+  const releaseTo = normalizeDate(query.releaseDateTo)
+  if (releaseFrom || releaseTo) {
+    filtered = filtered.filter((model) => {
+      const modelDate = normalizeDate(model.releaseDate)
+      if (!modelDate)
+        return false
+
+      if (releaseFrom && modelDate < releaseFrom)
+        return false
+      if (releaseTo && modelDate > releaseTo)
+        return false
+      return true
+    })
   }
 
   if (query.minIq !== undefined)
@@ -37,5 +65,19 @@ export function filterModels(models: Model[], query: ModelSearchQuery): Model[] 
   if (query.minSpeed !== undefined)
     filtered = filtered.filter(model => (model.speed ?? 0) >= query.minSpeed!)
 
+  if (query.minContextWindow !== undefined)
+    filtered = filtered.filter(model => (model.metrics?.contextWindow ?? 0) >= query.minContextWindow!)
+
+  if (query.mode)
+    filtered = filtered.filter(model => model.config?.mode === query.mode)
+
   return filtered
+}
+
+function normalizeDate(value?: string | Date | null): Date | undefined {
+  if (!value)
+    return undefined
+
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date
 }

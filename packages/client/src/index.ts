@@ -773,9 +773,14 @@ declare module '@rttnd/llm-shared' {
   export interface ModelSearchQuery {
     name?: string
     provider?: string
-    capability?: keyof NonNullable<Model['capabilities']>
+    capability?: keyof NonNullable<Model['capabilities']> | Array<keyof NonNullable<Model['capabilities']>>
+    status?: Model['status']
+    releaseDateFrom?: string | Date
+    releaseDateTo?: string | Date
     minIq?: number
     minSpeed?: number
+    minContextWindow?: number
+    mode?: NonNullable<NonNullable<Model['config']>['mode']>
   }
 
   export function filterModels(models: Model[], query: ModelSearchQuery): Model[]

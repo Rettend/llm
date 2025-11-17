@@ -54,12 +54,14 @@ export const pricingSchema = t.Object({
   blended: t.Optional(t.Nullable(t.Number({ description: 'Blended cost per 1M tokens at 3:1 input/output ratio (USD)' }))),
 })
 
+export const modeSchema = t.Union([
+  t.Literal('auto'),
+  t.Literal('json'),
+  t.Literal('tool'),
+])
+
 export const configSchema = t.Object({
-  mode: t.Union([
-    t.Literal('auto'),
-    t.Literal('json'),
-    t.Literal('tool'),
-  ]),
+  mode: modeSchema,
 })
 
 export const modelSchema = t.Object({
@@ -89,9 +91,17 @@ export const manifestSchema = t.Object({
 export const modelSearchQuerySchema = t.Object({
   name: t.Optional(t.String({ description: 'Filter by partial match on model name, value, or alias' })),
   provider: t.Optional(t.String({ description: 'Filter by provider slug (e.g., "openai")' })),
-  capability: t.Optional(capabilityKeySchema),
+  capability: t.Optional(t.Union([
+    capabilityKeySchema,
+    t.Array(capabilityKeySchema, { description: 'Require models that support every listed capability' }),
+  ])),
+  status: t.Optional(providerStatusSchema),
+  releaseDateFrom: t.Optional(t.String({ description: 'Filter models released on/after this ISO date' })),
+  releaseDateTo: t.Optional(t.String({ description: 'Filter models released on/before this ISO date' })),
   minIq: t.Optional(t.String({ description: 'Minimum IQ score (0-5)' })),
   minSpeed: t.Optional(t.String({ description: 'Minimum speed score (0-5)' })),
+  minContextWindow: t.Optional(t.String({ description: 'Minimum context window in tokens' })),
+  mode: t.Optional(modeSchema),
 })
 
 export const versionSchema = t.Object({

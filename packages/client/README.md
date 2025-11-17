@@ -136,28 +136,25 @@ const { data: model, error } = await registry.getModel('openai', 'gpt-5')
 
 ### Search Models
 
-Search and filter models. You can combine filters.
+Search and filter models using various criteria. All filters are optional and can be combined.
+
+#### Search Options
+
+- `name` (string): Filter by partial match on model name, value, or alias (case-insensitive).
+- `provider` (string): Filter by provider slug (e.g., "openai", "anthropic").
+- `capability` (CapabilityKey | CapabilityKey[]): Require models that support the specified capability, or all listed capabilities if an array.
+- `status` (ModelStatus): Filter by model status ("active", "beta", "deprecated").
+- `releaseDateFrom` (string | Date): Filter models released on or after this date.
+- `releaseDateTo` (string | Date): Filter models released on or before this date.
+- `minIq` (number): Minimum IQ score (0-5).
+- `minSpeed` (number): Minimum speed score (0-5).
+- `minContextWindow` (number): Minimum context window in tokens.
+- `mode` (ModelMode): Filter by AI SDK config mode ("auto", "json", "tool").
 
 ```typescript
-// Search by name
-const { data: gptModels } = await registry.searchModels({
-  name: 'gpt',
-})
-
-// Filter by provider
-const { data: anthropicModels } = await registry.searchModels({
-  provider: 'anthropic',
-})
-
-// Filter by capability
-const { data: visionModels } = await registry.searchModels({
-  capability: 'vision',
-})
-
-// Filter by performance
-const { data: smartModels } = await registry.searchModels({
-  minIq: 4, // IQ score >= 4
-  minSpeed: 3, // Speed score >= 3
+// Example: search by provider
+const { data: models } = await registry.searchModels({
+  provider: 'google'
 })
 ```
 

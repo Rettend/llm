@@ -81,12 +81,20 @@ export const app = new Elysia({
 
     applyCachingHeaders(set, manifest.etag)
 
+    const minContextWindow = query.minContextWindow ? Number(query.minContextWindow) : undefined
+    const normalizedContextWindow = Number.isNaN(minContextWindow) ? undefined : minContextWindow
+
     const searchQuery: ModelSearchQuery = {
       name: query.name,
       provider: query.provider,
       capability: query.capability,
+      status: query.status,
+      releaseDateFrom: query.releaseDateFrom,
+      releaseDateTo: query.releaseDateTo,
       minIq: parseScore(query.minIq),
       minSpeed: parseScore(query.minSpeed),
+      minContextWindow: normalizedContextWindow,
+      mode: query.mode,
     }
 
     return filterModels(manifest.models, searchQuery)
