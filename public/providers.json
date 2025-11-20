@@ -11,6 +11,7 @@
   {"value":"cerebras","name":"Cerebras","website":"https://cloud.cerebras.ai/","status":"latest"},
   {"value":"cohere","name":"Cohere","website":"https://dashboard.cohere.com/api-keys","status":"latest"},
   {"value":"databricks","name":"databricks","status":"latest"},
+  {"value":"deepcogito","name":"deepcogito","status":"latest"},
   {"value":"deepseek","name":"DeepSeek","website":"https://platform.deepseek.com/api_keys","status":"latest"},
   {"value":"google","name":"Google","keyPlaceholder":"AI...","website":"https://aistudio.google.com/app/apikey","status":"latest"},
   {"value":"groq","name":"Groq","website":"https://console.groq.com/keys","status":"latest"},
