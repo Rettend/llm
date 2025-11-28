@@ -17,6 +17,7 @@
   {"value":"groq","name":"Groq","website":"https://console.groq.com/keys","status":"latest"},
   {"value":"ibm","name":"ibm","status":"latest"},
   {"value":"inclusionai","name":"inclusionai","status":"latest"},
+  {"value":"kuaishou-streamlake","name":"kuaishou-streamlake","status":"latest"},
   {"value":"lg","name":"lg","status":"latest"},
   {"value":"liquidai","name":"liquidai","status":"latest"},
   {"value":"meta","name":"Meta","status":"latest"},
