@@ -116,3 +116,11 @@ export const versionSchema = t.Object({
 export const healthSchema = t.Object({
   status: t.Literal('ok'),
 })
+
+export const cronTriggerResponseSchema = t.Object({
+  success: t.Boolean({ description: 'Whether the cron job completed successfully' }),
+  version: t.String({ description: 'New manifest version identifier' }),
+  providers: t.Number({ description: 'Number of providers in the manifest' }),
+  models: t.Number({ description: 'Number of models in the manifest' }),
+  generatedAt: t.String({ description: 'ISO 8601 timestamp of manifest generation' }),
+})

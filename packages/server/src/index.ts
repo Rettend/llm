@@ -4,9 +4,9 @@ import { openapi } from '@elysiajs/openapi'
 import { filterModels } from '@rttnd/llm-shared'
 import { Elysia, t } from 'elysia'
 import { CloudflareAdapter } from 'elysia/adapter/cloudflare-worker'
-import cronHandler from './cron'
-import { apiDescription, healthDescription, manifestDescription, providerModelsDescription, providersDescription, searchModelsDescription, versionDescription } from './docs'
-import { healthSchema, manifestSchema, modelSchema, modelSearchQuerySchema, providerSchema, versionSchema } from './schema'
+import cronHandler, { runCronJob } from './cron'
+import { apiDescription, cronTriggerDescription, healthDescription, manifestDescription, providerModelsDescription, providersDescription, searchModelsDescription, versionDescription } from './docs'
+import { cronTriggerResponseSchema, healthSchema, manifestSchema, modelSchema, modelSearchQuerySchema, providerSchema, versionSchema } from './schema'
 import { applyCachingHeaders, getAllowedOrigin, handleConditionalRequest, loadManifest, parseScore } from './utils'
 
 export const app = new Elysia({
@@ -155,6 +155,33 @@ export const app = new Elysia({
     detail: {
       summary: 'Health check',
       description: healthDescription,
+      tags: ['System'],
+    },
+  })
+
+  .post('/cron/trigger', async ({ headers, query, set }) => {
+    const { env } = await import('cloudflare:workers')
+    const authHeader = headers.authorization
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : query.token
+
+    if (!env.CRON_AUTH_TOKEN || token !== env.CRON_AUTH_TOKEN) {
+      set.status = 401
+      return { error: 'Unauthorized' }
+    }
+
+    const result = await runCronJob(env)
+    return result
+  }, {
+    query: t.Object({
+      token: t.Optional(t.String({ description: 'Auth token (alternative to Authorization header)' })),
+    }),
+    response: {
+      200: cronTriggerResponseSchema,
+      401: t.Object({ error: t.String() }),
+    },
+    detail: {
+      summary: 'Trigger cron job manually',
+      description: cronTriggerDescription,
       tags: ['System'],
     },
   })

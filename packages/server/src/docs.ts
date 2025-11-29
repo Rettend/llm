@@ -89,3 +89,12 @@ export const healthDescription = `Returns the health status of the API.
 const { data: health } = await registry.getHealth()
 console.log(health.status) // 'ok'
 \`\`\``
+
+export const cronTriggerDescription = `Manually trigger the cron job to refresh the manifest from Artificial Analysis API.
+
+**Authentication:**
+Requires a valid auth token via:
+- \`Authorization: Bearer <token>\` header
+- \`?token=<token>\` query parameter
+
+Set the \`CRON_AUTH_TOKEN\` environment variable in Cloudflare dashboard.`
