@@ -203,5 +203,4 @@ export function createApp(deps: AppDependencies) {
         tags: ['System'],
       },
     })
-    .compile()
 }
