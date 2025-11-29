@@ -2,46 +2,49 @@
 
 import type { Manifest } from '@rttnd/llm-shared'
 import type { HTTPHeaders } from 'elysia'
-import { env } from 'cloudflare:workers'
 
 const CACHE_HEADER = 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800'
 
-export function getAllowedOrigin(request: Request): boolean {
-  const origin = request.headers.get('origin')
-  if (!origin)
-    return false
+export function createAllowedOriginChecker(env: Cloudflare.Env) {
+  return function getAllowedOrigin(request: Request): boolean {
+    const origin = request.headers.get('origin')
+    if (!origin)
+      return false
 
-  const raw = env.ALLOWED_ORIGINS?.trim()
+    const raw = env.ALLOWED_ORIGINS?.trim()
 
-  if (!raw)
-    return false
+    if (!raw)
+      return false
 
-  if (raw === '*')
-    return true
-
-  const allowed = raw.split(',').map(o => o.trim()).filter(Boolean)
-
-  for (const pattern of allowed) {
-    if (pattern === origin)
+    if (raw === '*')
       return true
 
-    if (pattern.startsWith('*.')) {
-      const domain = pattern.slice(2)
-      if (origin.endsWith(domain))
-        return true
-    }
-  }
+    const allowed = raw.split(',').map(o => o.trim()).filter(Boolean)
 
-  return false
+    for (const pattern of allowed) {
+      if (pattern === origin)
+        return true
+
+      if (pattern.startsWith('*.')) {
+        const domain = pattern.slice(2)
+        if (origin.endsWith(domain))
+          return true
+      }
+    }
+
+    return false
+  }
 }
 
-export async function loadManifest(): Promise<Manifest> {
-  const cached = await env.REGISTRY.get('manifest', 'text')
+export function createManifestLoader(env: Cloudflare.Env) {
+  return async function loadManifest(): Promise<Manifest> {
+    const cached = await env.REGISTRY.get('manifest', 'text')
 
-  if (!cached)
-    throw new Error('Manifest not found in KV storage')
+    if (!cached)
+      throw new Error('Manifest not found in KV storage')
 
-  return JSON.parse(cached)
+    return JSON.parse(cached)
+  }
 }
 
 export function parseScore(value?: string): number | undefined {
