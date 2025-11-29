@@ -126,8 +126,10 @@ export const MODEL_REGISTRY = defineModelRegistry({
   'anthropic': {
     'anthropic/claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, toolUse, json) },
     'anthropic/claude-opus-4-5-thinking': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, toolUse, json) },
+    'claude-4-5-sonnet-thinking': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, toolUse, json) },
+    'claude-4-5-haiku-reasoning': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },
 
   'google': {
