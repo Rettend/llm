@@ -143,8 +143,8 @@ Search and filter models using various criteria. All filters are optional and ca
 
 #### Search Options
 
-- `name` (string): Filter by partial match on model name, value, or alias (case-insensitive).
-- `provider` (string): Filter by provider slug (e.g., "openai", "anthropic").
+- `name` (string | string[]): Filter by partial match on model name, value, or alias (case-insensitive). Accepts a single string or an array of strings.
+- `provider` (string | string[]): Filter by provider slug (e.g., "openai", "anthropic").
 - `capability` (CapabilityKey | CapabilityKey[]): Require models that support the specified capability, or all listed capabilities if an array.
 - `status` (Status | Status[]): Filter by model status ("latest", "preview", "all").
 - `releaseDateFrom` (string | Date): Filter models released on or after this date.

@@ -5,8 +5,8 @@ type ModelStatus = Model['status']
 type ModelMode = NonNullable<NonNullable<Model['config']>['mode']>
 
 export interface ModelSearchQuery {
-  name?: string
-  provider?: string
+  name?: string | string[]
+  provider?: string | string[]
   capability?: CapabilityKey | CapabilityKey[]
   status?: ModelStatus | ModelStatus[]
   releaseDateFrom?: string | Date
@@ -23,17 +23,25 @@ export interface ModelSearchQuery {
 export function filterModels(models: Model[], query: ModelSearchQuery): Model[] {
   let filtered = models
 
-  if (query.name && query.name.trim().length > 0) {
-    const searchTerm = query.name.trim().toLowerCase()
-    filtered = filtered.filter(model =>
-      model.name.toLowerCase().includes(searchTerm)
-      || model.value.toLowerCase().includes(searchTerm)
-      || model.alias?.toLowerCase().includes(searchTerm),
-    )
+  if (query.name) {
+    const nameFilters = (Array.isArray(query.name) ? query.name : [query.name])
+      .map(n => n.trim().toLowerCase())
+      .filter(n => n.length > 0)
+    if (nameFilters.length > 0) {
+      filtered = filtered.filter(model =>
+        nameFilters.some(searchTerm =>
+          model.name.toLowerCase().includes(searchTerm)
+          || model.value.toLowerCase().includes(searchTerm)
+          || model.alias?.toLowerCase().includes(searchTerm),
+        ),
+      )
+    }
   }
 
-  if (query.provider)
-    filtered = filtered.filter(model => model.provider === query.provider)
+  if (query.provider) {
+    const providerFilters = Array.isArray(query.provider) ? query.provider : [query.provider]
+    filtered = filtered.filter(model => providerFilters.includes(model.provider))
+  }
 
   if (query.capability) {
     const capabilityFilters = Array.isArray(query.capability) ? query.capability : [query.capability]

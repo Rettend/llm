@@ -95,11 +95,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'gpt-5-1': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-1-non-reasoning': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5': { status: 'all', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-medium': { status: 'all', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'o3': { status: 'all', contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-low': { status: 'all', contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
@@ -108,7 +104,6 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'gpt-oss-120b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-20b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-chatgpt': { status: 'all', contextWindow: 128_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-nano-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },
@@ -116,23 +111,27 @@ export const MODEL_REGISTRY = defineModelRegistry({
   'moonshotai': {
     'kimi-k2-thinking': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
     'kimi-k2-0905': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'moonshotai/kimi-linear-48b-a3b-instruct': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
   },
 
   'xai': {
     'grok-4': { contextWindow: 256_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'grok-4-1-fast-reasoning': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'grok-4-1-fast': { contextWindow: 1_000_000, capabilities: _(text, vision, toolUse, json) },
     'grok-4-fast-reasoning': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'grok-4-fast': { contextWindow: 1_000_000, capabilities: _(text, vision, toolUse, json) },
-    'grok-3-mini-reasoning': { contextWindow: 131_072, capabilities: _(text, reasoning, toolUse, json) },
     'grok-code-fast-1': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
   },
 
   'anthropic': {
+    'anthropic/claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, toolUse, json) },
+    'anthropic/claude-opus-4-5-thinking': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'claude-4-1-opus': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },
 
   'google': {
+    'gemini-3-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
     'gemini-2-5-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
     'gemini-2-5-flash': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
     'gemini-2-5-flash-lite': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json) },
@@ -196,12 +195,13 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'devstral-medium': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
     'devstral-small': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
     'codestral': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
-    'ministral-8b': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
-    'ministral-3b': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
+    'ministral-8b-2410': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
+    'ministral-3b-2410': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
   },
 
   'bytedance_seed': {
     'seed-oss-36b-instruct': { contextWindow: 512_000, capabilities: _(text, reasoning, toolUse, json) },
+    'doubao-seed-code': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
   },
 
   'servicenow': {
@@ -280,6 +280,9 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'azure': {
+    'anthropic/claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'phi-4': { contextWindow: 16_000, capabilities: _(text, reasoning, toolUse, json) },
     'phi-4-mini': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
     'phi-4-multimodal': { contextWindow: 128_000, capabilities: _(text, vision, toolUse, json, audio) },
