@@ -120,6 +120,25 @@ async function hashBaseUrl(baseUrl: string): Promise<string> {
   return baseUrl.replace(/[^a-z0-9]/gi, '').slice(0, 48) || 'default'
 }
 
+/**
+ * Normalize array parameters for query string serialization.
+ * Eden/Elysia expects arrays to be passed as-is for proper serialization.
+ */
+function normalizeArrayParam<T extends string>(value: T | T[] | undefined): T | T[] | undefined {
+  return value
+}
+
+/**
+ * Normalize date parameters to ISO string format.
+ */
+function normalizeDate(value: string | Date | undefined): string | undefined {
+  if (!value)
+    return undefined
+  if (value instanceof Date)
+    return value.toISOString().split('T')[0]
+  return value
+}
+
 export class LLMClient {
   public config: Required<LLMClientConfig>
   public cache: {
@@ -423,11 +442,16 @@ export class LLMClient {
     try {
       const { data, error, status } = await this.api.v1.models.search.get({
         query: {
-          name: query.name,
-          provider: query.provider,
+          name: normalizeArrayParam(query.name),
+          provider: normalizeArrayParam(query.provider),
           capability: query.capability,
+          status: query.status,
+          releaseDateFrom: normalizeDate(query.releaseDateFrom),
+          releaseDateTo: normalizeDate(query.releaseDateTo),
           minIq: query.minIq !== undefined ? String(query.minIq) : undefined,
           minSpeed: query.minSpeed !== undefined ? String(query.minSpeed) : undefined,
+          minContextWindow: query.minContextWindow !== undefined ? String(query.minContextWindow) : undefined,
+          mode: query.mode,
         },
       })
 

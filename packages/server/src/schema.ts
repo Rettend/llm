@@ -89,15 +89,21 @@ export const manifestSchema = t.Object({
 })
 
 export const modelSearchQuerySchema = t.Object({
-  name: t.Optional(t.String({ description: 'Filter by partial match on model name, value, or alias' })),
-  provider: t.Optional(t.String({ description: 'Filter by provider slug (e.g., "openai")' })),
+  name: t.Optional(t.Union([
+    t.String({ description: 'Filter by partial match on model name, value, or alias' }),
+    t.Array(t.String(), { description: 'Multiple name filters allowed (OR logic)' }),
+  ])),
+  provider: t.Optional(t.Union([
+    t.String({ description: 'Filter by provider slug (e.g., "openai")' }),
+    t.Array(t.String(), { description: 'Multiple providers allowed (OR logic)' }),
+  ])),
   capability: t.Optional(t.Union([
     capabilityKeySchema,
     t.Array(capabilityKeySchema, { description: 'Require models that support every listed capability' }),
   ])),
   status: t.Optional(t.Union([
     statusSchema,
-    t.Array(statusSchema, { description: 'Multiple statuses allowed using repeated query params' }),
+    t.Array(statusSchema, { description: 'Multiple statuses allowed (OR logic)' }),
   ])),
   releaseDateFrom: t.Optional(t.String({ description: 'Filter models released on/after this ISO date' })),
   releaseDateTo: t.Optional(t.String({ description: 'Filter models released on/before this ISO date' })),
