@@ -111,7 +111,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
   'moonshotai': {
     'kimi-k2-thinking': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
     'kimi-k2-0905': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
-    'moonshotai/kimi-linear-48b-a3b-instruct': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
+    'kimi-linear-48b-a3b-instruct': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
   },
 
   'xai': {
@@ -124,8 +124,8 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'anthropic': {
-    'anthropic/claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, toolUse, json) },
-    'anthropic/claude-opus-4-5-thinking': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, toolUse, json) },
+    'claude-opus-4-5-thinking': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, toolUse, json) },
     'claude-4-5-sonnet-thinking': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, toolUse, json) },
@@ -282,7 +282,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'azure': {
-    'anthropic/claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'phi-4': { contextWindow: 16_000, capabilities: _(text, reasoning, toolUse, json) },
