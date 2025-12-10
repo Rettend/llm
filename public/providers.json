@@ -23,6 +23,7 @@
   {"value":"meta","name":"Meta","status":"latest"},
   {"value":"minimax","name":"minimax","status":"latest"},
   {"value":"mistral","name":"Mistral","website":"https://console.mistral.ai/api-keys/","status":"latest"},
+  {"value":"motif-technologies","name":"motif-technologies","status":"latest"},
   {"value":"nous-research","name":"nous-research","status":"latest"},
   {"value":"nvidia","name":"nvidia","status":"latest"},
   {"value":"openai","name":"OpenAI","keyPlaceholder":"sk-...","website":"https://platform.openai.com/api-keys","status":"latest"},
