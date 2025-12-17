@@ -2,7 +2,7 @@
   "name": "@rttnd/llm-monorepo",
   "version": "1.3.0",
   "private": true,
-  "packageManager": "bun@1.3.2",
+  "packageManager": "bun@1.3.3",
   "description": "LLM Registry Monorepo",
   "workspaces": {
     "packages": [
@@ -24,6 +24,7 @@
         "@typescript/native-preview": "^7.0.0-dev.20251030.1",
         "ai": "^5.0.82",
         "bumpp": "^10.3.1",
+        "bun-test-ui": "^0.1.1",
         "eslint": "^9.38.0",
         "taze": "^19.9.0",
         "tsdown": "^0.16.1",
@@ -52,7 +53,7 @@
     "cf:tail": "bun run --cwd packages/server cf:tail",
     "lint": "eslint . --fix",
     "test": "bun test",
-    "test:ui": "vitest --ui",
+    "test:ui": "bun-test-ui",
     "seed": "bun run scripts/seed.ts",
     "report": "bun run scripts/report.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
@@ -73,6 +74,7 @@
     "@typescript/native-preview": "catalog:dev",
     "ai": "catalog:dev",
     "bumpp": "catalog:dev",
+    "bun-test-ui": "catalog:dev",
     "eslint": "catalog:dev",
     "taze": "catalog:dev",
     "tsdown": "catalog:dev"
