@@ -32,6 +32,7 @@
   {"value":"openai","name":"OpenAI","keyPlaceholder":"sk-...","website":"https://platform.openai.com/api-keys","status":"latest"},
   {"value":"openchat","name":"openchat","status":"latest"},
   {"value":"perplexity","name":"perplexity","status":"latest"},
+  {"value":"prime-intellect","name":"prime-intellect","status":"latest"},
   {"value":"reka-ai","name":"reka-ai","status":"latest"},
   {"value":"servicenow","name":"servicenow","status":"latest"},
   {"value":"snowflake","name":"snowflake","status":"latest"},
