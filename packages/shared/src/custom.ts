@@ -1,3 +1,4 @@
+import type { RegistryModel, RegistryProvider } from './registry'
 import type { Model, Provider } from './types'
 
 export interface ProviderOverride {
@@ -43,9 +44,11 @@ export interface ModelOverride {
    * Useful for inference providers that host an existing lab model.
    */
   inheritFrom?: {
-    provider: string
-    value: string
-  }
+    [P in RegistryProvider]: {
+      provider: P
+      value: RegistryModel<P>
+    }
+  }[RegistryProvider]
 
   /**
    * Optional explicit id. If omitted, a stable synthetic id is generated.

@@ -69,7 +69,7 @@ interface FlexibleModelRegistry {
 
 type FlexibleRegistryMap = Record<string, Record<string, FlexibleModelRegistry>>
 
-function defineModelRegistry(map: FlexibleRegistryMap): RegistryMap {
+function defineModelRegistry<T extends FlexibleRegistryMap>(map: T): { [P in keyof T]: { [M in keyof T[P]]: ModelRegistry } } {
   const out: RegistryMap = {}
   for (const provider of Object.keys(map)) {
     out[provider] = {}
@@ -87,7 +87,7 @@ function defineModelRegistry(map: FlexibleRegistryMap): RegistryMap {
       }
     }
   }
-  return out
+  return out as { [P in keyof T]: { [M in keyof T[P]]: ModelRegistry } }
 }
 
 export const MODEL_REGISTRY = defineModelRegistry({
@@ -400,3 +400,7 @@ export function getModelRegistry(provider: string, modelValue: string): ModelReg
   const group = (MODEL_REGISTRY as RegistryMap)[provider]
   return group?.[modelValue]
 }
+
+export type Registry = typeof MODEL_REGISTRY
+export type RegistryProvider = keyof Registry
+export type RegistryModel<P extends RegistryProvider> = keyof Registry[P]
