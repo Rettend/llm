@@ -69,7 +69,7 @@ interface FlexibleModelRegistry {
 
 type FlexibleRegistryMap = Record<string, Record<string, FlexibleModelRegistry>>
 
-function defineModelRegistry(map: FlexibleRegistryMap): RegistryMap {
+function defineModelRegistry<T extends FlexibleRegistryMap>(map: T): { [P in keyof T]: { [M in keyof T[P]]: ModelRegistry } } {
   const out: RegistryMap = {}
   for (const provider of Object.keys(map)) {
     out[provider] = {}
@@ -87,14 +87,16 @@ function defineModelRegistry(map: FlexibleRegistryMap): RegistryMap {
       }
     }
   }
-  return out
+  return out as { [P in keyof T]: { [M in keyof T[P]]: ModelRegistry } }
 }
 
 export const MODEL_REGISTRY = defineModelRegistry({
   'openai': {
-    'gpt-5-1': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-1-non-reasoning': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'gpt-5-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-2': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-2-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-2-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
+    'gpt-5-2-non-reasoning': { contextWindow: 400_000, capabilities: _(text, vision, toolUse, json) },
+    'gpt-5-1-codex-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-5-mini-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning, toolUse, json) },
@@ -108,12 +110,6 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'gpt-5-nano-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },
 
-  'moonshotai': {
-    'kimi-k2-thinking': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
-    'kimi-k2-0905': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
-    'kimi-linear-48b-a3b-instruct': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
-  },
-
   'xai': {
     'grok-4': { contextWindow: 256_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'grok-4-1-fast-reasoning': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
@@ -121,6 +117,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'grok-4-fast-reasoning': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'grok-4-fast': { contextWindow: 1_000_000, capabilities: _(text, vision, toolUse, json) },
     'grok-code-fast-1': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'grok-voice': { contextWindow: 32_000, capabilities: _(audio, reasoning, toolUse, json) },
   },
 
   'anthropic': {
@@ -134,6 +131,9 @@ export const MODEL_REGISTRY = defineModelRegistry({
 
   'google': {
     'gemini-3-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
+    'gemini-3-pro-low': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
+    'gemini-3-flash': { contextWindow: 1_048_576, capabilities: _(text, vision, toolUse, json, audio) },
+    'gemini-3-flash-reasoning': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
     'gemini-2-5-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
     'gemini-2-5-flash': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json, audio) },
     'gemini-2-5-flash-lite': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, toolUse, json) },
@@ -147,16 +147,19 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'minimax': {
-    'minimax-m2': { contextWindow: 205_000, capabilities: _(text, reasoning, toolUse, json) },
-    'minimax-text-01': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
+    'minimax-m2-1': { contextWindow: 205_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'kimi': {
+    'kimi-k2': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'kimi-k2-thinking': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'kimi-k2-0905': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'kimi-linear-48b-a3b-instruct': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
   },
 
   'deepseek': {
-    'deepseek-v3-2': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
-    'deepseek-v3-1-terminus': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
-    'deepseek-r1': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
-    'deepseek-r1-0528-qwen3-8b': { contextWindow: 33_000, capabilities: _(text, reasoning, toolUse, json) },
-    'deepseek-r1-distill-llama-70b': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
+    'deepseek-v3-2-reasoning': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
+    'deepseek-v3-2': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
   },
 
   'alibaba': {
@@ -184,33 +187,44 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'zai': {
-    'glm-4-6': { contextWindow: 200_000, capabilities: _(text, reasoning, toolUse, json) },
-    'glm-4-5-air': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
-    'glm-4-5v': { contextWindow: 64_000, capabilities: _(text, reasoning, vision, toolUse, json) },
+    'glm-4-7': { contextWindow: 200_000, capabilities: _(text, reasoning, toolUse, json) },
+    'glm-4-7-non-reasoning': { contextWindow: 200_000, capabilities: _(text, toolUse, json) },
+    'glm-4-7-flash': { contextWindow: 200_000, capabilities: _(text, reasoning, toolUse, json) },
+    'glm-4-7-flash-non-reasoning': { contextWindow: 200_000, capabilities: _(text, toolUse, json) },
+    'glm-4-6v': { contextWindow: 128_000, capabilities: _(text, vision, toolUse, json) },
+    'glm-4-6v-reasoning': { contextWindow: 128_000, capabilities: _(text, reasoning, vision, toolUse, json) },
   },
 
   'mistral': {
+    'mistral-large-3': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'devstral-2': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'devstral-small-2': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'ministral-3-14b': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'ministral-3-3b': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'ministral-3-8b': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
     'magistral-medium': { contextWindow: 128_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'magistral-small': { contextWindow: 128_000, capabilities: _(text, vision, reasoning, toolUse, json) },
     'mistral-medium-3-1': { contextWindow: 128_000, capabilities: _(text, vision, toolUse, json) },
     'mistral-small-3-2': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
     'devstral-medium': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
     'devstral-small': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
-    'codestral': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
-    'ministral-8b-2410': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
-    'ministral-3b-2410': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
   },
 
   'bytedance_seed': {
     'seed-oss-36b-instruct': { contextWindow: 512_000, capabilities: _(text, reasoning, toolUse, json) },
+    'doubao-seed-1-8': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
     'doubao-seed-code': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
   },
 
   'servicenow': {
-    'apriel-v1-5-15b-thinker': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
+    'apriel-v1-6-15b-thinker': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
   },
 
   'nvidia': {
+    'nvidia-nemotron-3-nano-30b-a3b': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
+    'nvidia-nemotron-3-nano-30b-a3b-reasoning': { contextWindow: 1_000_000, capabilities: _(text, reasoning, toolUse, json) },
+    'nvidia-nemotron-nano-12b-v2-vl': { contextWindow: 128_000, capabilities: _(text, vision, toolUse, json) },
+    'nvidia-nemotron-nano-12b-v2-vl-reasoning': { contextWindow: 128_000, capabilities: _(text, reasoning, vision, toolUse, json) },
     'llama-nemotron-super-49b-v1-5': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
     'llama-nemotron-ultra': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
     'nvidia-nemotron-nano-9b-v2': { contextWindow: 131_000, capabilities: _(text, reasoning, toolUse, json) },
@@ -227,6 +241,8 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'lg': {
+    'k-exaone': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'k-exaone-non-reasoning': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
     'exaone-4-0-32b': { contextWindow: 131_000, capabilities: _(text, toolUse, json) },
     'exaone-4-0-1-2b': { contextWindow: 64_000, capabilities: _(text) },
   },
@@ -239,6 +255,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'upstage': {
+    'solar-open-100b-reasoning': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
     'solar-pro-2': { contextWindow: 66_000, capabilities: _(text, vision, reasoning, toolUse, json) },
   },
 
@@ -252,20 +269,24 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'baidu': {
+    'ernie-5-0-thinking-preview': { contextWindow: 128_000, capabilities: _(text, reasoning, vision, toolUse, json) },
     'ernie-4-5-300b-a47b': { contextWindow: 131_000, capabilities: _(text, vision, toolUse, json) },
   },
 
   'aws': {
-    'nova-premier': { contextWindow: 1_000_000, capabilities: _(text, vision, toolUse, json) },
-    'nova-pro': { contextWindow: 300_000, capabilities: _(text, vision, toolUse, json) },
-    'nova-lite': { contextWindow: 300_000, capabilities: _(text, vision, toolUse, json) },
-    'nova-micro': { contextWindow: 130_000, capabilities: _(text, toolUse, json) },
+    'nova-2-0-pro': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'nova-2-0-pro-reasoning-low': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'nova-2-0-pro-reasoning-medium': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+    'nova-2-0-omni': { contextWindow: 256_000, capabilities: _(text, vision, toolUse, json) },
+    'nova-2-0-omni-reasoning-low': { contextWindow: 256_000, capabilities: _(text, reasoning, vision, toolUse, json) },
+    'nova-2-0-omni-reasoning-medium': { contextWindow: 256_000, capabilities: _(text, reasoning, vision, toolUse, json) },
+    'nova-2-0-lite': { contextWindow: 1_000_000, capabilities: _(text, toolUse, json) },
+    'nova-2-0-lite-reasoning-low': { contextWindow: 1_000_000, capabilities: _(text, reasoning, toolUse, json) },
+    'nova-2-0-lite-reasoning-medium': { contextWindow: 1_000_000, capabilities: _(text, reasoning, toolUse, json) },
   },
 
   'cohere': {
     'command-a': { contextWindow: 256_000, capabilities: _(text, vision, reasoning, toolUse, json) },
-    'aya-expanse-32b': { contextWindow: 128_000, capabilities: _(text) },
-    'aya-expanse-8b': { contextWindow: 8_000, capabilities: _(text) },
   },
 
   'reka-ai': {
@@ -311,25 +332,64 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'liquidai': {
-    'lfm2-8b-a1b': { contextWindow: 33_000, capabilities: _(text, toolUse, json) },
-    'lfm2-2-6b': { contextWindow: 33_000, capabilities: _(text, toolUse, json) },
-    'lfm2-1-2b': { contextWindow: 33_000, capabilities: _(text, toolUse, json) },
+    'lfm2-5-1-2b-instruct': { contextWindow: 32_000, capabilities: _(text, toolUse, json) },
+    'lfm2-5-1-2b-thinking': { contextWindow: 32_000, capabilities: _(text, reasoning, toolUse, json) },
+    'lfm2-5-vl-1-6b': { contextWindow: 32_000, capabilities: _(text, vision, toolUse, json) },
   },
 
   'cerebras': {
-    'gpt-oss-120b': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
-    'llama-3.3-70b': { contextWindow: 100_000, capabilities: _(text, toolUse, json) },
-    'qwen-3-235b-a22b-instruct-2507': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
-    'zai-glm-4.6': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
+    'zai-glm-4.7': { contextWindow: 131_000, capabilities: _(text, reasoning, toolUse, json) },
+    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, reasoning, toolUse, json) },
+    'llama-3.3-70b': { contextWindow: 128_000, capabilities: _(text, toolUse, json) },
+    'qwen-3-235b-a22b-instruct-2507': { contextWindow: 131_000, capabilities: _(text, toolUse, json) },
   },
 
   'groq': {
-    'llama-3.3-70b-versatile': { contextWindow: 100_000, capabilities: _(text, toolUse, json) },
-    'meta-llama/llama-4-maverick-17b-128e-instruct': { contextWindow: 100_000, capabilities: _(text, vision, toolUse, json) },
-    'meta-llama/llama-4-scout-17b-16e-instruct': { contextWindow: 100_000, capabilities: _(text, vision, toolUse, json) },
-    'moonshotai/kimi-k2-instruct-0905': { contextWindow: 100_000, capabilities: _(text, toolUse, json) },
-    'openai/gpt-oss-120b': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
-    'openai/gpt-oss-20b': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
+    'llama-3.3-70b-versatile': { contextWindow: 131_000, capabilities: _(text, toolUse, json) },
+    'meta-llama/llama-4-maverick-17b-128e-instruct': { contextWindow: 131_000, capabilities: _(text, vision, toolUse, json) },
+    'meta-llama/llama-4-scout-17b-16e-instruct': { contextWindow: 131_000, capabilities: _(text, vision, toolUse, json) },
+    'moonshotai/kimi-k2-instruct-0905': { contextWindow: 262_000, capabilities: _(text, toolUse, json) },
+    'openai/gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, reasoning, toolUse, json) },
+    'openai/gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'ai2': {
+    'olmo-3-1-32b-instruct': { contextWindow: 66_000, capabilities: _(text, toolUse, json) },
+    'olmo-3-1-32b-think': { contextWindow: 66_000, capabilities: _(text, reasoning, toolUse, json) },
+    'olmo-3-7b-instruct': { contextWindow: 66_000, capabilities: _(text, toolUse, json) },
+    'olmo-3-7b-think': { contextWindow: 66_000, capabilities: _(text, reasoning, toolUse, json) },
+    'molmo2-8b': { contextWindow: 4_000, capabilities: _(text, vision, toolUse, json) },
+  },
+
+  'korea-telecom': {
+    'mi-dm-k-2-5-pro-dec28': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'mbzuai': {
+    'k2-v2': { contextWindow: 262_000, capabilities: _(text, reasoning, toolUse, json) },
+    'k2-v2-low': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
+    'k2-v2-medium': { contextWindow: 100_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'motif-technologies': {
+    'motif-2-12-7b': { contextWindow: 128_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'naver': {
+    'hyperclova-x-seed-think-32b': { contextWindow: 128_000, capabilities: _(text, reasoning, vision, toolUse, json) },
+  },
+
+  'prime-intellect': {
+    'intellect-3': { contextWindow: 131_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'tii-uae': {
+    'falcon-h1r-7b': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
+  },
+
+  'xiaomi': {
+    'mimo-v2-flash': { contextWindow: 256_000, capabilities: _(text, toolUse, json) },
+    'mimo-v2-flash-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning, toolUse, json) },
   },
 })
 
@@ -340,3 +400,7 @@ export function getModelRegistry(provider: string, modelValue: string): ModelReg
   const group = (MODEL_REGISTRY as RegistryMap)[provider]
   return group?.[modelValue]
 }
+
+export type Registry = typeof MODEL_REGISTRY
+export type RegistryProvider = keyof Registry
+export type RegistryModel<P extends RegistryProvider> = keyof Registry[P]
