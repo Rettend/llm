@@ -48,8 +48,12 @@ function getRegistryKeys(): string[] {
   return keys
 }
 
-async function diffModels(options: { showMissingFromRegistry?: boolean, writeToRegistry?: boolean } = {}) {
-  const { showMissingFromRegistry = false, writeToRegistry = false } = options
+async function diffModels(options: {
+  showMissingFromRegistry?: boolean
+  writeToRegistry?: boolean
+  pruneRegistry?: boolean
+} = {}) {
+  const { showMissingFromRegistry = false, writeToRegistry = false, pruneRegistry = false } = options
   const hasCurrent = await fileExists(CURRENT_MODELS_PATH)
   if (!hasCurrent) {
     console.error(`❌ ${CURRENT_MODELS_PATH} not found. Make sure you've pulled the latest public data.`)
@@ -180,9 +184,6 @@ async function diffModels(options: { showMissingFromRegistry?: boolean, writeToR
     const lines: string[] = []
     lines.push(before)
 
-    const indentProvider = '  '
-    const indentModel = '    '
-
     const closeIndex = after.lastIndexOf('})')
     if (closeIndex === -1)
       throw new Error(`Could not locate closing of MODEL_REGISTRY in ${registryPath}`)
@@ -191,44 +192,42 @@ async function diffModels(options: { showMissingFromRegistry?: boolean, writeToR
     const bodyAfterClose = after.slice(closeIndex)
 
     // Now append new entries (merge into existing providers when possible)
+    // Now append new entries (merge into existing providers when possible)
     for (const [provider, models] of providerGroups) {
       const providerKey = `\n  '${provider}': {\n`
       const providerIndex = bodyBeforeClose.indexOf(providerKey)
 
       if (providerIndex !== -1) {
-        // Provider already exists: insert models before its closing `  },`
-        const providerBlockEnd = bodyBeforeClose.indexOf('\n  },', providerIndex)
-        if (providerBlockEnd === -1)
-          continue
+        // Provider already exists: insert models AT THE TOP (after `{\n`)
+        const insertionIndex = providerIndex + providerKey.length
 
-        const beforeProviderClose = bodyBeforeClose.slice(0, providerBlockEnd)
-        const afterProviderClose = bodyBeforeClose.slice(providerBlockEnd)
+        const before = bodyBeforeClose.slice(0, insertionIndex)
+        const after = bodyBeforeClose.slice(insertionIndex)
 
-        const providerLines: string[] = []
-        providerLines.push(beforeProviderClose)
+        const modelLines: string[] = []
         for (const model of models) {
-          providerLines.push(`\n${indentModel}'${model.value}': {`)
-          providerLines.push(`${indentModel}  contextWindow: 100_000,`)
-          providerLines.push(`${indentModel}  capabilities: _(text),`)
-          providerLines.push(`${indentModel}},`)
+          modelLines.push(`    '${model.value}': {`)
+          modelLines.push(`      contextWindow: 100_000,`)
+          modelLines.push(`      capabilities: _(text),`)
+          modelLines.push(`    },`)
         }
-        providerLines.push(afterProviderClose)
 
-        bodyBeforeClose = providerLines.join('')
+        const newBlock = `${modelLines.join('\n')}\n`
+        bodyBeforeClose = before + newBlock + after
       }
       else {
-        // New provider: append a fresh block before the final close.
+        // New provider: prepend a fresh block at the START of the registry body
         const providerLines: string[] = []
-        providerLines.push(`\n${indentProvider}'${provider}': {`)
+        providerLines.push(`\n  '${provider}': {`)
         for (const model of models) {
-          providerLines.push(`\n${indentModel}'${model.value}': {`)
-          providerLines.push(`${indentModel}  contextWindow: 100_000,`)
-          providerLines.push(`${indentModel}  capabilities: _(text),`)
-          providerLines.push(`${indentModel}},`)
+          providerLines.push(`    '${model.value}': {`)
+          providerLines.push(`      contextWindow: 100_000,`)
+          providerLines.push(`      capabilities: _(text),`)
+          providerLines.push(`    },`)
         }
-        providerLines.push(`\n${indentProvider}},`)
+        providerLines.push(`  },`)
 
-        bodyBeforeClose += providerLines.join('')
+        bodyBeforeClose = providerLines.join('\n') + bodyBeforeClose
       }
     }
 
@@ -241,13 +240,41 @@ async function diffModels(options: { showMissingFromRegistry?: boolean, writeToR
   }
 
   if (removedKeys.length) {
-    console.log('📤 Models present in baseline but missing from current public data:')
-    for (const key of removedKeys) {
-      const model = baselineMap.get(key)!
-      const displayName = model.name ? ` — ${model.name}` : ''
-      console.log(`- ${model.provider}/${model.value}${displayName}`)
+    if (pruneRegistry) {
+      const registryPath = 'packages/shared/src/registry.ts'
+      let registrySource = await fs.readFile(registryPath, 'utf8')
+      let removedCount = 0
+
+      for (const key of removedKeys) {
+        const model = baselineMap.get(key)!
+        const regex = new RegExp(`\\n\\s+'${model.value}': \\{[\\s\\S]*?\\},`, 'g')
+
+        if (regex.test(registrySource)) {
+          registrySource = registrySource.replace(regex, '')
+          removedCount++
+        }
+        else {
+          console.warn(`⚠️ Could not find code block for ${model.provider}/${model.value} to prune.`)
+        }
+      }
+
+      const emptyProviderRegex = /\n\s+'[^']+': \{\n\s+\},/g
+      while (emptyProviderRegex.test(registrySource))
+        registrySource = registrySource.replace(emptyProviderRegex, '')
+
+      await fs.writeFile(registryPath, registrySource, 'utf8')
+      console.log(`✂️  Pruned ${removedCount} outdated models from ${registryPath}`)
     }
-    console.log()
+    else {
+      console.log('📤 Models present in baseline but missing from current public data:')
+      for (const key of removedKeys) {
+        const model = baselineMap.get(key)!
+        const displayName = model.name ? ` — ${model.name}` : ''
+        console.log(`- ${model.provider}/${model.value}${displayName}`)
+      }
+      console.log('   (Run with --prune to remove these from registry)')
+      console.log()
+    }
   }
 
   if (showMissingFromRegistry && missingFromCurrent.length) {
@@ -296,11 +323,12 @@ async function main() {
   const shouldUpdateBaseline = args.has('--update-baseline') || args.has('-u')
   const showMissingFromRegistry = args.has('--missing-from-registry') || args.has('-m')
   const writeToRegistry = args.has('--write') || args.has('-w')
+  const pruneRegistry = args.has('--prune') || args.has('-p')
 
   if (shouldUpdateBaseline)
     await updateBaseline()
   else
-    await diffModels({ showMissingFromRegistry, writeToRegistry })
+    await diffModels({ showMissingFromRegistry, writeToRegistry, pruneRegistry })
 }
 
 main().catch((error) => {
