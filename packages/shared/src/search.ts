@@ -1,7 +1,7 @@
 import type { Model } from './types'
 
 type CapabilityKey = keyof NonNullable<Model['capabilities']>
-type ModelStatus = Model['status']
+type ModelStatus = NonNullable<Model['status']>
 type ModelMode = NonNullable<NonNullable<Model['config']>['mode']>
 
 export interface ModelSearchQuery {
