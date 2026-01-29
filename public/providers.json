@@ -36,6 +36,7 @@
   {"value":"reka-ai","name":"reka-ai","status":"latest"},
   {"value":"servicenow","name":"servicenow","status":"latest"},
   {"value":"snowflake","name":"snowflake","status":"latest"},
+  {"value":"stepfun","name":"stepfun","status":"latest"},
   {"value":"tii-uae","name":"tii-uae","status":"latest"},
   {"value":"upstage","name":"upstage","status":"latest"},
   {"value":"xai","name":"xai","status":"latest"},
