@@ -15,6 +15,7 @@
   {"value":"google","name":"Google","keyPlaceholder":"AI...","website":"https://aistudio.google.com/app/apikey","status":"latest"},
   {"value":"groq","name":"Groq","website":"https://console.groq.com/keys","status":"latest"},
   {"value":"ibm","name":"ibm","status":"latest"},
+  {"value":"inception","name":"inception","status":"latest"},
   {"value":"inclusionai","name":"inclusionai","status":"latest"},
   {"value":"kimi","name":"kimi","status":"latest"},
   {"value":"korea-telecom","name":"korea-telecom","status":"latest"},
