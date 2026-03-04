@@ -60,7 +60,7 @@
     "reasoning": "bun run scripts/reasoning.ts",
     "check": "bun run --cwd packages/client check && bun run --cwd packages/shared check && bun run --cwd packages/server check",
     "update": "taze -wr latest && bun install --lockfile-only",
-    "release": "bumpp && bun run build && bun run --cwd packages/shared release && bun run --cwd packages/client release"
+    "release": "npm login && bumpp && bun run build && bun run --cwd packages/shared release && bun run --cwd packages/client release"
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "catalog:dev",
