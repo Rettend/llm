@@ -191,14 +191,13 @@ async function diffModels(options: {
     let bodyBeforeClose = after.slice(0, closeIndex)
     const bodyAfterClose = after.slice(closeIndex)
 
-    // Now append new entries (merge into existing providers when possible)
-    // Now append new entries (merge into existing providers when possible)
+    // Append new entries (merge into existing providers when possible)
     for (const [provider, models] of providerGroups) {
       const providerKey = `\n  '${provider}': {\n`
       const providerIndex = bodyBeforeClose.indexOf(providerKey)
 
       if (providerIndex !== -1) {
-        // Provider already exists: insert models AT THE TOP (after `{\n`)
+        // Provider already exists: insert models at the top, skip duplicates
         const insertionIndex = providerIndex + providerKey.length
 
         const before = bodyBeforeClose.slice(0, insertionIndex)
@@ -206,25 +205,24 @@ async function diffModels(options: {
 
         const modelLines: string[] = []
         for (const model of models) {
-          modelLines.push(`    '${model.value}': {`)
-          modelLines.push(`      contextWindow: 100_000,`)
-          modelLines.push(`      capabilities: _(text),`)
-          modelLines.push(`    },`)
+          // Skip if model already exists in this provider block
+          if (bodyBeforeClose.includes(`'${model.value}':`))
+            continue
+          modelLines.push(`    '${model.value}': { contextWindow: 100_000, capabilities: _(text) },`)
         }
 
-        const newBlock = `${modelLines.join('\n')}\n`
-        bodyBeforeClose = before + newBlock + after
+        if (modelLines.length) {
+          const newBlock = `${modelLines.join('\n')}\n`
+          bodyBeforeClose = before + newBlock + after
+        }
       }
       else {
-        // New provider: prepend a fresh block at the START of the registry body
+        // New provider: prepend a fresh block at the start of the registry body
         const providerLines: string[] = []
         providerLines.push(`\n  '${provider}': {`)
-        for (const model of models) {
-          providerLines.push(`    '${model.value}': {`)
-          providerLines.push(`      contextWindow: 100_000,`)
-          providerLines.push(`      capabilities: _(text),`)
-          providerLines.push(`    },`)
-        }
+        for (const model of models)
+          providerLines.push(`    '${model.value}': { contextWindow: 100_000, capabilities: _(text) },`)
+
         providerLines.push(`  },`)
 
         bodyBeforeClose = providerLines.join('\n') + bodyBeforeClose
@@ -247,9 +245,11 @@ async function diffModels(options: {
 
       for (const key of removedKeys) {
         const model = baselineMap.get(key)!
-        const regex = new RegExp(`\\n\\s+'${model.value}': \\{[\\s\\S]*?\\},`, 'g')
+        // Match both single-line  ('key': { ... },)  and multi-line entries
+        const regex = new RegExp(`\\n\\s+'${model.value}':\\s*\\{[^}]*\\},?`, 'g')
 
         if (regex.test(registrySource)) {
+          regex.lastIndex = 0
           registrySource = registrySource.replace(regex, '')
           removedCount++
         }
@@ -281,10 +281,10 @@ async function diffModels(options: {
     console.log('❓ Registry entries missing from current public models.json:')
     for (const key of missingFromCurrent) {
       const [provider, value] = key.split(':')
-      const providerRegistry = MODEL_REGISTRY[provider as keyof typeof MODEL_REGISTRY]
-      const registryEntry = providerRegistry && typeof providerRegistry === 'object'
-        ? providerRegistry[value as keyof typeof providerRegistry]
-        : undefined
+      if (!provider || !value)
+        continue
+      const providerRegistry = (MODEL_REGISTRY as Record<string, Record<string, { status?: string }>>)[provider]
+      const registryEntry = providerRegistry?.[value]
       const status = registryEntry?.status ?? 'unknown'
       console.log(`- ${provider}/${value} (status: ${status})`)
     }

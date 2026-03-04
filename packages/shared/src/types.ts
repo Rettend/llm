@@ -1,4 +1,5 @@
 export type Status = 'latest' | 'preview' | 'all'
+export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'max' | 'xhigh' | (string & {})
 
 export interface Provider {
   value: string // 'openai', 'anthropic', etc.
@@ -21,10 +22,9 @@ export interface Model {
     text?: boolean
     vision?: boolean
     reasoning?: boolean
-    toolUse?: boolean
-    json?: boolean
     audio?: boolean
   }
+  reasoningEfforts?: ReasoningEffort[]
 
   // Performance
   iq?: 0 | 1 | 2 | 3 | 4 | 5 // Derived from AA intelligence index

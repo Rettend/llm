@@ -209,7 +209,7 @@ Search models with query parameters rather than downloading the full manifest.
 
 - `name` - Filter by partial match across name, value, or alias. Accepts a single string or an array of strings
 - `provider` - Restrict results to one or more provider slugs
-- `capability` - Require a capability (`text`, `vision`, `reasoning`, `toolUse`, `json`, `audio`)
+- `capability` - Require a capability (`text`, `vision`, `reasoning`, `audio`)
 - `minIq` - Minimum IQ score (0-5)
 - `minSpeed` - Minimum speed score (0-5)
 - `status` - Filter by one or more statuses (`latest`, `preview`, `all`)

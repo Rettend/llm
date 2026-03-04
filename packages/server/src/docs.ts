@@ -60,7 +60,7 @@ const { data: visionModels } = await registry.searchModels({
 // Combine multiple filters
 const { data: models } = await registry.searchModels({
   provider: 'anthropic',
-  capability: 'toolUse',
+  capability: 'reasoning',
   minIq: 4,
 })
 \`\`\``
