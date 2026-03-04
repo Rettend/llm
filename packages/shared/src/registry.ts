@@ -133,6 +133,7 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'google': {
+    'gemini-3-1-flash-lite-preview': { contextWindow: 1_000_000, capabilities: _(text, vision, audio, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
     'gemini-3-1-pro-preview': { contextWindow: 1_000_000, capabilities: _(text, vision, audio, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
     'gemini-3-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['low', 'high'] },
     'gemini-3-pro-low': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['low', 'high'] },

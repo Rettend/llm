@@ -73,6 +73,13 @@ function resolveModelStatus(registryStatus?: Status, releaseDate?: string): Stat
   return 'all'
 }
 
+function isCuratedOrPreview(model: Model): boolean {
+  if (getModelRegistry(model.provider, model.value))
+    return true
+
+  return model.status === 'preview'
+}
+
 function getProviderValue(creatorSlug: string): string {
   return PROVIDER_MAP[creatorSlug]?.value ?? creatorSlug
 }
@@ -178,7 +185,9 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
 
   const aaData = await response.json() as AAResponse
 
-  const aaModels = aaData.data.map(transformAAModel)
+  const aaModels = aaData.data
+    .map(transformAAModel)
+    .filter(isCuratedOrPreview)
 
   const aaProviderSet = new Set<string>()
   aaModels.forEach(m => aaProviderSet.add(m.provider))
