@@ -1,4 +1,5 @@
 export * from './custom'
+export * from './reasoning'
 export * from './registry'
 export * from './search'
 export * from './types'

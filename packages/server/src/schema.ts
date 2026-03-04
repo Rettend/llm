@@ -18,8 +18,6 @@ export const capabilitySchema = t.Object({
   text: t.Optional(t.Boolean()),
   vision: t.Optional(t.Boolean()),
   reasoning: t.Optional(t.Boolean()),
-  toolUse: t.Optional(t.Boolean()),
-  json: t.Optional(t.Boolean()),
   audio: t.Optional(t.Boolean()),
 })
 
@@ -27,8 +25,6 @@ export const capabilityKeySchema = t.Union([
   t.Literal('text'),
   t.Literal('vision'),
   t.Literal('reasoning'),
-  t.Literal('toolUse'),
-  t.Literal('json'),
   t.Literal('audio'),
 ])
 
@@ -60,6 +56,17 @@ export const modeSchema = t.Union([
   t.Literal('tool'),
 ])
 
+export const reasoningControlOptionSchema = t.Object({
+  id: t.String({ description: 'Reasoning option id (e.g., "default", "thinking", "high")' }),
+  model: t.String({ description: 'Model value to send when this option is selected' }),
+  effort: t.Optional(t.String({ description: 'Provider reasoning effort value for this option' })),
+})
+
+export const reasoningControlSchema = t.Object({
+  default: t.String({ description: 'Default reasoning option id' }),
+  options: t.Array(reasoningControlOptionSchema),
+})
+
 export const configSchema = t.Object({
   mode: modeSchema,
 })
@@ -71,6 +78,7 @@ export const modelSchema = t.Object({
   name: t.String({ description: 'Full display name of the model' }),
   alias: t.Optional(t.String({ description: 'Short name for UI dropdowns' })),
   capabilities: t.Optional(capabilitySchema),
+  reasoningControl: t.Optional(reasoningControlSchema),
   iq: t.Optional(scoreSchema),
   speed: t.Optional(scoreSchema),
   metrics: t.Optional(metricsSchema),

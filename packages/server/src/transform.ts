@@ -73,6 +73,13 @@ function resolveModelStatus(registryStatus?: Status, releaseDate?: string): Stat
   return 'all'
 }
 
+function isCuratedOrPreview(model: Model): boolean {
+  if (getModelRegistry(model.provider, model.value))
+    return true
+
+  return model.status === 'preview'
+}
+
 function getProviderValue(creatorSlug: string): string {
   return PROVIDER_MAP[creatorSlug]?.value ?? creatorSlug
 }
@@ -93,6 +100,12 @@ function transformAAModel(aaModel: AAModel): Model {
     alias: baseName.split('(')[0]?.trim(),
 
     capabilities: registryEntry?.capabilities,
+    reasoningControl: registryEntry?.reasoningControl
+      ? {
+          default: registryEntry.reasoningControl.default,
+          options: registryEntry.reasoningControl.options.map(option => ({ ...option })),
+        }
+      : undefined,
 
     iq: scoreIq(aaModel.evaluations?.artificial_analysis_intelligence_index),
     speed: scoreSpeed(aaModel.median_output_tokens_per_second),
@@ -133,6 +146,12 @@ function toCanonicalManifest(providers: Provider[], models: Model[]): { provider
   const canonicalModels = models.map(model => ({
     ...model,
     capabilities: model.capabilities ? { ...model.capabilities } : undefined,
+    reasoningControl: model.reasoningControl
+      ? {
+          default: model.reasoningControl.default,
+          options: model.reasoningControl.options.map(option => ({ ...option })),
+        }
+      : undefined,
     metrics: model.metrics ? { ...model.metrics } : undefined,
     pricing: model.pricing ? { ...model.pricing } : undefined,
     config: model.config ? { ...model.config } : undefined,
@@ -176,7 +195,9 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
 
   const aaData = await response.json() as AAResponse
 
-  const aaModels = aaData.data.map(transformAAModel)
+  const aaModels = aaData.data
+    .map(transformAAModel)
+    .filter(isCuratedOrPreview)
 
   const aaProviderSet = new Set<string>()
   aaModels.forEach(m => aaProviderSet.add(m.provider))
