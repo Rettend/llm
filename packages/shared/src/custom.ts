@@ -64,8 +64,6 @@ export interface ModelOverride {
   iq?: Model['iq']
   speed?: Model['speed']
   reasoningControl?: Model['reasoningControl']
-  variantValues?: Model['variantValues']
-  reasoningProfiles?: Model['reasoningProfiles']
   metrics?: Partial<Model['metrics']>
   pricing?: Model['pricing']
   releaseDate?: Model['releaseDate']
@@ -87,14 +85,6 @@ function cloneModel(model: Model): Model {
           default: model.reasoningControl.default,
           options: model.reasoningControl.options.map(option => ({ ...option })),
         }
-      : undefined,
-    variantValues: model.variantValues ? [...model.variantValues] : undefined,
-    reasoningProfiles: model.reasoningProfiles
-      ? model.reasoningProfiles.map(profile => ({
-          ...profile,
-          metrics: profile.metrics ? { ...profile.metrics } : undefined,
-          pricing: profile.pricing ? { ...profile.pricing } : undefined,
-        }))
       : undefined,
     metrics: model.metrics ? { ...model.metrics } : undefined,
     pricing: model.pricing ? { ...model.pricing } : undefined,
@@ -201,17 +191,6 @@ export function applyOverrides(
             default: override.reasoningControl.default,
             options: override.reasoningControl.options.map(option => ({ ...option })),
           }
-        : undefined
-    }
-    if (override.variantValues !== undefined)
-      model.variantValues = override.variantValues ? [...override.variantValues] : undefined
-    if (override.reasoningProfiles !== undefined) {
-      model.reasoningProfiles = override.reasoningProfiles
-        ? override.reasoningProfiles.map(profile => ({
-            ...profile,
-            metrics: profile.metrics ? { ...profile.metrics } : undefined,
-            pricing: profile.pricing ? { ...profile.pricing } : undefined,
-          }))
         : undefined
     }
     if (override.metrics !== undefined) {

@@ -5,32 +5,13 @@ export interface ReasoningControlOption {
   id: ReasoningOptionID
   model: string
   effort?: string
+  iq?: 0 | 1 | 2 | 3 | 4 | 5
+  speed?: 0 | 1 | 2 | 3 | 4 | 5
 }
 
 export interface ReasoningControl {
   default: ReasoningOptionID
   options: ReasoningControlOption[]
-}
-
-export interface ReasoningProfile {
-  id: ReasoningOptionID
-  model: string
-  effort?: string
-  iq?: 0 | 1 | 2 | 3 | 4 | 5
-  speed?: 0 | 1 | 2 | 3 | 4 | 5
-  metrics?: {
-    contextWindow?: number
-    intelligenceIndex?: number | null
-    codingIndex?: number | null
-    mathIndex?: number | null
-  }
-  pricing?: {
-    input?: number | null
-    output?: number | null
-    blended?: number | null
-  }
-  releaseDate?: string
-  status?: Status
 }
 
 export interface Provider {
@@ -57,8 +38,6 @@ export interface Model {
     audio?: boolean
   }
   reasoningControl?: ReasoningControl
-  variantValues?: string[]
-  reasoningProfiles?: ReasoningProfile[]
 
   // Performance
   iq?: 0 | 1 | 2 | 3 | 4 | 5 // Derived from AA intelligence index

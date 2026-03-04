@@ -60,23 +60,13 @@ export const reasoningControlOptionSchema = t.Object({
   id: t.String({ description: 'Reasoning option id (e.g., "default", "thinking", "high")' }),
   model: t.String({ description: 'Model value to send when this option is selected' }),
   effort: t.Optional(t.String({ description: 'Provider reasoning effort value for this option' })),
+  iq: t.Optional(scoreSchema),
+  speed: t.Optional(scoreSchema),
 })
 
 export const reasoningControlSchema = t.Object({
   default: t.String({ description: 'Default reasoning option id' }),
   options: t.Array(reasoningControlOptionSchema),
-})
-
-export const reasoningProfileSchema = t.Object({
-  id: t.String({ description: 'Reasoning profile id (e.g., "default", "thinking", "high")' }),
-  model: t.String({ description: 'Underlying model value for this reasoning profile' }),
-  effort: t.Optional(t.String({ description: 'Provider reasoning effort value for this profile' })),
-  iq: t.Optional(scoreSchema),
-  speed: t.Optional(scoreSchema),
-  metrics: t.Optional(metricsSchema),
-  pricing: t.Optional(pricingSchema),
-  releaseDate: t.Optional(t.String({ description: 'Profile release date (ISO 8601)' })),
-  status: t.Optional(statusSchema),
 })
 
 export const configSchema = t.Object({
@@ -91,8 +81,6 @@ export const modelSchema = t.Object({
   alias: t.Optional(t.String({ description: 'Short name for UI dropdowns' })),
   capabilities: t.Optional(capabilitySchema),
   reasoningControl: t.Optional(reasoningControlSchema),
-  variantValues: t.Optional(t.Array(t.String({ description: 'Underlying model values covered by this canonical model' }))),
-  reasoningProfiles: t.Optional(t.Array(reasoningProfileSchema)),
   iq: t.Optional(scoreSchema),
   speed: t.Optional(scoreSchema),
   metrics: t.Optional(metricsSchema),

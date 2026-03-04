@@ -92,7 +92,7 @@ describe('registry reasoning metadata', () => {
 })
 
 describe('canonicalizeModels', () => {
-  it('collapses reasoning variants into one canonical model with profiles', () => {
+  it('collapses reasoning variants into one canonical model', () => {
     const control = {
       default: 'default' as const,
       options: [
@@ -128,10 +128,9 @@ describe('canonicalizeModels', () => {
     expect(canonical).toHaveLength(1)
     expect(canonical[0]?.name).toBe('Grok 4 Fast')
     expect(canonical[0]?.value).toBe('grok-4-fast')
-    expect(canonical[0]?.variantValues).toEqual(['grok-4-fast-non-reasoning', 'grok-4-fast-reasoning'])
-    expect(canonical[0]?.reasoningProfiles).toEqual([
-      { id: 'default', model: 'grok-4-fast-non-reasoning', iq: 3, speed: 5, metrics: undefined, pricing: undefined, status: undefined, releaseDate: undefined },
-      { id: 'thinking', model: 'grok-4-fast-reasoning', iq: 4, speed: 3, metrics: undefined, pricing: undefined, status: undefined, releaseDate: undefined },
+    expect(canonical[0]?.reasoningControl?.options).toEqual([
+      { id: 'default', model: 'grok-4-fast-non-reasoning' },
+      { id: 'thinking', model: 'grok-4-fast-reasoning', iq: 4, speed: 3 },
     ])
 
     const thinking = resolveReasoningProfile(canonical[0]!, 'thinking')
@@ -141,10 +140,29 @@ describe('canonicalizeModels', () => {
       effort: undefined,
       iq: 4,
       speed: 3,
-      metrics: undefined,
-      pricing: undefined,
-      status: undefined,
-      releaseDate: undefined,
+    })
+  })
+
+  it('falls back to canonical default iq/speed when selected option has no override score', () => {
+    const model = makeModel({
+      value: 'gpt-5',
+      iq: 4,
+      speed: 5,
+      reasoningControl: {
+        default: 'default',
+        options: [
+          { id: 'default', model: 'gpt-5-non-reasoning' },
+          { id: 'high', model: 'gpt-5', effort: 'high' },
+        ],
+      },
+    })
+
+    expect(resolveReasoningProfile(model, 'high')).toEqual({
+      id: 'high',
+      model: 'gpt-5',
+      effort: 'high',
+      iq: 4,
+      speed: 5,
     })
   })
 })

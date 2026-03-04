@@ -1,9 +1,14 @@
-import type { Model, ReasoningControlOption, ReasoningOptionID, ReasoningProfile } from './types'
+import type { Model, ReasoningControlOption, ReasoningOptionID } from './types'
 
 export interface ResolvedReasoningSelection {
   id: ReasoningOptionID
   model: string
   effort?: string
+}
+
+export interface ResolvedReasoningProfile extends ResolvedReasoningSelection {
+  iq?: Model['iq']
+  speed?: Model['speed']
 }
 
 const REASONING_NAME_SUFFIX = /\s*\((?:non[-\s]?reasoning(?:[-\s]low[-\s]effort)?|reasoning|thinking|adaptive)\)\s*$/i
@@ -74,18 +79,52 @@ function getDefaultModelValue(model: Model): string {
   return defaultOption?.model ?? control.options[0]!.model
 }
 
-function toReasoningProfile(option: ReasoningControlOption, target: Model | undefined): ReasoningProfile {
-  return {
-    id: option.id,
-    model: option.model,
-    effort: option.effort,
-    iq: target?.iq,
-    speed: target?.speed,
-    metrics: target?.metrics ? { ...target.metrics } : undefined,
-    pricing: target?.pricing ? { ...target.pricing } : undefined,
-    status: target?.status,
-    releaseDate: target?.releaseDate,
-  }
+function findOptionTarget(
+  modelByKey: ReadonlyMap<string, Model>,
+  provider: string,
+  sortedGroup: Model[],
+  optionModel: string,
+): Model | undefined {
+  return modelByKey.get(keyOf(provider, optionModel))
+    ?? sortedGroup.find(model => model.value === optionModel)
+}
+
+function enrichReasoningOptions(input: {
+  options: ReasoningControlOption[]
+  defaultOptionID: ReasoningOptionID
+  defaultTarget: Model | undefined
+  provider: string
+  sortedGroup: Model[]
+  modelByKey: ReadonlyMap<string, Model>
+}): ReasoningControlOption[] {
+  const defaultIQ = input.defaultTarget?.iq
+  const defaultSpeed = input.defaultTarget?.speed
+
+  return input.options.map((option) => {
+    const next: ReasoningControlOption = { ...option }
+
+    if (option.id === input.defaultOptionID) {
+      delete next.iq
+      delete next.speed
+      return next
+    }
+
+    const target = findOptionTarget(input.modelByKey, input.provider, input.sortedGroup, option.model)
+    const optionIQ = next.iq ?? target?.iq
+    const optionSpeed = next.speed ?? target?.speed
+
+    if (optionIQ !== undefined && optionIQ !== defaultIQ)
+      next.iq = optionIQ
+    else
+      delete next.iq
+
+    if (optionSpeed !== undefined && optionSpeed !== defaultSpeed)
+      next.speed = optionSpeed
+    else
+      delete next.speed
+
+    return next
+  })
 }
 
 export function getReasoningOptions(model: Pick<Model, 'reasoningControl'>): ReasoningControlOption[] {
@@ -147,33 +186,37 @@ export function canonicalizeModels(models: Model[]): Model[] {
     const canonical = cloneModel(source)
     canonical.value = canonicalValue
     canonical.name = normalizeCanonicalName(canonical.name)
-    canonical.variantValues = Array.from(new Set(sortedGroup.map(model => model.value))).sort((a, b) => a.localeCompare(b))
 
     if (canonical.reasoningControl && canonical.reasoningControl.options.length > 0) {
-      const profiles = canonical.reasoningControl.options.map((option) => {
-        const target = modelByKey.get(keyOf(provider, option.model))
-          ?? sortedGroup.find(model => model.value === option.model)
-        return toReasoningProfile(option, target)
-      })
+      const defaultOption = canonical.reasoningControl.options.find(option => option.id === canonical.reasoningControl?.default)
+        ?? canonical.reasoningControl.options[0]
 
-      canonical.reasoningProfiles = profiles
+      const defaultTarget = defaultOption
+        ? findOptionTarget(modelByKey, provider, sortedGroup, defaultOption.model)
+        : undefined
 
-      const defaultProfile = profiles.find(profile => profile.id === canonical.reasoningControl?.default) ?? profiles[0]
-      if (defaultProfile) {
-        const target = modelByKey.get(keyOf(provider, defaultProfile.model))
-          ?? sortedGroup.find(model => model.value === defaultProfile.model)
-        if (target) {
-          canonical.id = target.id
-          canonical.name = normalizeCanonicalName(target.name)
-          canonical.alias = target.alias
-          canonical.iq = target.iq
-          canonical.speed = target.speed
-          canonical.metrics = target.metrics ? { ...target.metrics } : undefined
-          canonical.pricing = target.pricing ? { ...target.pricing } : undefined
-          canonical.releaseDate = target.releaseDate
-          canonical.status = target.status
-          canonical.config = target.config ? { ...target.config } : undefined
-        }
+      if (defaultOption) {
+        canonical.reasoningControl.options = enrichReasoningOptions({
+          options: canonical.reasoningControl.options,
+          defaultOptionID: defaultOption.id,
+          defaultTarget,
+          provider,
+          sortedGroup,
+          modelByKey,
+        })
+      }
+
+      if (defaultTarget) {
+        canonical.id = defaultTarget.id
+        canonical.name = normalizeCanonicalName(defaultTarget.name)
+        canonical.alias = defaultTarget.alias
+        canonical.iq = defaultTarget.iq
+        canonical.speed = defaultTarget.speed
+        canonical.metrics = defaultTarget.metrics ? { ...defaultTarget.metrics } : undefined
+        canonical.pricing = defaultTarget.pricing ? { ...defaultTarget.pricing } : undefined
+        canonical.releaseDate = defaultTarget.releaseDate
+        canonical.status = defaultTarget.status
+        canonical.config = defaultTarget.config ? { ...defaultTarget.config } : undefined
       }
     }
 
@@ -189,18 +232,28 @@ export function canonicalizeModels(models: Model[]): Model[] {
 }
 
 export function resolveReasoningProfile(
-  model: Pick<Model, 'value' | 'reasoningControl' | 'reasoningProfiles'>,
+  model: Pick<Model, 'value' | 'reasoningControl' | 'iq' | 'speed'>,
   optionID?: string | null,
-): ReasoningProfile {
+): ResolvedReasoningProfile {
   const selection = resolveReasoningSelection(model, optionID)
-  const profile = model.reasoningProfiles?.find(item => item.id === selection.id)
+  const control = model.reasoningControl
 
-  if (!profile)
-    return selection
+  if (!control || control.options.length === 0) {
+    return {
+      ...selection,
+      iq: model.iq,
+      speed: model.speed,
+    }
+  }
+
+  const defaultOption = control.options.find(option => option.id === control.default) ?? control.options[0]
+  const resolvedOption = control.options.find(option => option.id === selection.id)
+  const defaultIQ = defaultOption?.iq ?? model.iq
+  const defaultSpeed = defaultOption?.speed ?? model.speed
 
   return {
-    ...profile,
-    metrics: profile.metrics ? { ...profile.metrics } : undefined,
-    pricing: profile.pricing ? { ...profile.pricing } : undefined,
+    ...selection,
+    iq: resolvedOption?.iq ?? defaultIQ,
+    speed: resolvedOption?.speed ?? defaultSpeed,
   }
 }
