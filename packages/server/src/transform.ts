@@ -179,14 +179,6 @@ function toCanonicalManifest(providers: Provider[], models: Model[]): { provider
           options: model.reasoningControl.options.map(option => ({ ...option })),
         }
       : undefined,
-    variantValues: model.variantValues ? [...model.variantValues] : undefined,
-    reasoningProfiles: model.reasoningProfiles
-      ? model.reasoningProfiles.map(profile => ({
-          ...profile,
-          metrics: profile.metrics ? { ...profile.metrics } : undefined,
-          pricing: profile.pricing ? { ...profile.pricing } : undefined,
-        }))
-      : undefined,
     metrics: model.metrics ? { ...model.metrics } : undefined,
     pricing: model.pricing ? { ...model.pricing } : undefined,
     config: model.config ? { ...model.config } : undefined,

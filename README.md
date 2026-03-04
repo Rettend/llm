@@ -196,6 +196,13 @@ Returns models for a specific provider.
       "input": 1.25,
       "output": 10,
       "blended": 3.44
+    },
+    "reasoningControl": {
+      "default": "default",
+      "options": [
+        { "id": "default", "model": "gpt-5-non-reasoning" },
+        { "id": "thinking", "model": "gpt-5", "iq": 5, "speed": 3 }
+      ]
     }
   }
 ]
@@ -228,6 +235,13 @@ Search models with query parameters rather than downloading the full manifest.
     "capabilities": {
       "vision": true,
       "text": true
+    },
+    "reasoningControl": {
+      "default": "default",
+      "options": [
+        { "id": "default", "model": "gpt-5-non-reasoning" },
+        { "id": "thinking", "model": "gpt-5", "iq": 5, "speed": 3 }
+      ]
     }
   }
 ]
