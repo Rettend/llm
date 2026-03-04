@@ -100,7 +100,12 @@ function transformAAModel(aaModel: AAModel): Model {
     alias: baseName.split('(')[0]?.trim(),
 
     capabilities: registryEntry?.capabilities,
-    reasoningEfforts: registryEntry?.reasoningEfforts ? [...registryEntry.reasoningEfforts] : undefined,
+    reasoningControl: registryEntry?.reasoningControl
+      ? {
+          default: registryEntry.reasoningControl.default,
+          options: registryEntry.reasoningControl.options.map(option => ({ ...option })),
+        }
+      : undefined,
 
     iq: scoreIq(aaModel.evaluations?.artificial_analysis_intelligence_index),
     speed: scoreSpeed(aaModel.median_output_tokens_per_second),
@@ -141,7 +146,12 @@ function toCanonicalManifest(providers: Provider[], models: Model[]): { provider
   const canonicalModels = models.map(model => ({
     ...model,
     capabilities: model.capabilities ? { ...model.capabilities } : undefined,
-    reasoningEfforts: model.reasoningEfforts ? [...model.reasoningEfforts] : undefined,
+    reasoningControl: model.reasoningControl
+      ? {
+          default: model.reasoningControl.default,
+          options: model.reasoningControl.options.map(option => ({ ...option })),
+        }
+      : undefined,
     metrics: model.metrics ? { ...model.metrics } : undefined,
     pricing: model.pricing ? { ...model.pricing } : undefined,
     config: model.config ? { ...model.config } : undefined,

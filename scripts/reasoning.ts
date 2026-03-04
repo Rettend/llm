@@ -4,6 +4,7 @@ import process from 'node:process'
 import { MODEL_REGISTRY } from '@rttnd/llm-shared/registry'
 
 const REGISTRY_PATH = 'packages/shared/src/registry.ts'
+const REASONING_DATA_PATH = 'packages/shared/src/reasoning-data.ts'
 const MODELS_DEV_URL = 'https://models.dev/api.json'
 const OPENCODE_REPO = 'anomalyco/opencode'
 const OPENCODE_BRANCH = 'dev'
@@ -71,12 +72,30 @@ interface EffortLookup {
   releaseDateByNormalizedModel: Map<string, string>
 }
 
-interface ApplyResult {
-  source: string
-  touchedLines: number
-  added: number
-  updated: number
-  removed: number
+interface ResolutionStats {
+  exactHits: number
+  uniqueHits: number
+  normalizedHits: number
+  fallbackHits: number
+}
+
+interface RegistryRecord {
+  provider: string
+  model: string
+  base: string
+  reasoning: boolean
+  efforts: string[]
+}
+
+interface ReasoningGroupSpec {
+  defaultModel: string
+  model: string
+  efforts?: string[]
+}
+
+interface ReasoningGroupData {
+  groups: Map<string, ReasoningGroupSpec>
+  modelToGroup: Map<string, string>
 }
 
 function parseArgValue(args: string[], name: string, short?: string): string | undefined {
@@ -123,6 +142,17 @@ function modelIDCandidates(modelID: string): string[] {
   return Array.from(values)
 }
 
+function deriveFamilyBase(modelID: string): string {
+  return modelID
+    .replace(/-non-reasoning(?:-low-effort)?$/i, '')
+    .replace(/-thinking-preview$/i, '')
+    .replace(/-reasoning-preview$/i, '')
+    .replace(/-reasoning-(?:none|minimal|low|medium|high|max|xhigh)$/i, '')
+    .replace(/-reasoning$/i, '')
+    .replace(/-thinking$/i, '')
+    .replace(/-adaptive$/i, '')
+}
+
 function effortScore(efforts: string[]): number {
   let score = efforts.length * 10
   if (efforts.includes('xhigh'))
@@ -155,7 +185,7 @@ function pickBestEfforts(candidates: string[][]): string[] {
   return best
 }
 
-function extractBlock(source: string, anchor: string): { block: string, start: number, end: number } {
+function extractBlock(source: string, anchor: string): { block: string } {
   const start = source.indexOf(anchor)
   if (start === -1)
     throw new Error(`Could not find anchor: ${anchor}`)
@@ -175,8 +205,6 @@ function extractBlock(source: string, anchor: string): { block: string, start: n
     if (depth === 0) {
       return {
         block: source.slice(braceStart + 1, i),
-        start,
-        end: i + 1,
       }
     }
   }
@@ -341,94 +369,352 @@ function buildLookup(modelsDev: ModelsDevData, variants: VariantsFn): EffortLook
   }
 }
 
-function removeReasoningEffortsProperty(body: string): string {
-  return body
-    .replace(/,\s*reasoningEfforts:\s*\[[^\]]*\]/g, '')
-    .replace(/^\s*reasoningEfforts:\s*\[[^\]]*\],\s*/g, '')
-    .replace(/^\s*reasoningEfforts:\s*\[[^\]]*\]\s*$/g, '')
-    .trim()
-}
+function getEffortsForRegistryModel(input: {
+  provider: string
+  model: string
+  supportsReasoning: boolean
+  lookup: EffortLookup
+  variants: VariantsFn
+}): { efforts: string[], source: 'exact' | 'unique' | 'normalized' | 'fallback' | 'none' } {
+  const { provider, model, supportsReasoning, lookup, variants } = input
+  if (!supportsReasoning)
+    return { efforts: [], source: 'none' }
 
-function replaceReasoningEfforts(line: string, efforts: string[]): { line: string, had: boolean, has: boolean } {
-  const match = line.match(/^(\s+'[^']+':\s*\{)\s*(.*?)\s*(\},?)\s*$/)
-  if (!match)
-    return { line, had: false, has: false }
+  const candidates = modelIDCandidates(model)
 
-  const [, prefix, rawBody, suffix] = match
-  const had = /\breasoningEfforts:\s*\[/.test(rawBody)
+  const exactMatches: string[][] = []
+  for (const candidate of candidates) {
+    const exactHit = lookup.exact.get(keyOf(provider, candidate))
+    if (exactHit)
+      exactMatches.push(exactHit)
+  }
+  if (exactMatches.length > 0)
+    return { efforts: pickBestEfforts(exactMatches), source: 'exact' }
 
-  const cleanedBody = removeReasoningEffortsProperty(rawBody)
-  const effortsLiteral = efforts.length > 0
-    ? `reasoningEfforts: [${efforts.map(value => `'${value}'`).join(', ')}]`
-    : ''
+  const uniqueMatches: string[][] = []
+  for (const candidate of candidates) {
+    const uniqueHit = lookup.uniqueByModel.get(candidate.toLowerCase())
+    if (uniqueHit)
+      uniqueMatches.push(uniqueHit)
+  }
+  if (uniqueMatches.length > 0)
+    return { efforts: pickBestEfforts(uniqueMatches), source: 'unique' }
 
-  const nextBody = effortsLiteral
-    ? (cleanedBody.length > 0 ? `${cleanedBody}, ${effortsLiteral}` : effortsLiteral)
-    : cleanedBody
+  const normalizedMatches: string[][] = []
+  for (const candidate of candidates) {
+    const normalizedHit = lookup.uniqueByNormalizedModel.get(normalizeModelID(candidate))
+    if (normalizedHit)
+      normalizedMatches.push(normalizedHit)
+  }
+  if (normalizedMatches.length > 0)
+    return { efforts: pickBestEfforts(normalizedMatches), source: 'normalized' }
 
-  const nextLine = `${prefix} ${nextBody} ${suffix}`
+  const npm = PROVIDER_NPM_FALLBACK[provider] ?? '@ai-sdk/openai-compatible'
+  const fallbackMatches: string[][] = []
+
+  for (const candidate of candidates) {
+    const modelLookupKey = candidate.toLowerCase()
+    const normalizedModelLookupKey = normalizeModelID(candidate)
+
+    const runtimeModel = toRuntimeModel({
+      providerID: provider,
+      modelID: candidate,
+      npm,
+      reasoning: true,
+      releaseDate: lookup.releaseDateByModel.get(modelLookupKey) ?? lookup.releaseDateByNormalizedModel.get(normalizedModelLookupKey),
+    })
+
+    const efforts = getEfforts(variants, runtimeModel)
+    if (efforts.length > 0)
+      fallbackMatches.push(efforts)
+  }
+
   return {
-    line: nextLine,
-    had,
-    has: efforts.length > 0,
+    efforts: pickBestEfforts(fallbackMatches),
+    source: 'fallback',
   }
 }
 
-function applyRegistryUpdates(source: string, effortsByModel: Map<string, string[]>): ApplyResult {
-  const lines = source.split('\n')
-  let currentProvider: string | null = null
+function resolveEffortsForRegistry(input: {
+  lookup: EffortLookup
+  variants: VariantsFn
+}): { effortsByModel: Map<string, string[]>, stats: ResolutionStats } {
+  const effortsByModel = new Map<string, string[]>()
 
-  let touchedLines = 0
-  let added = 0
-  let updated = 0
-  let removed = 0
+  let exactHits = 0
+  let uniqueHits = 0
+  let normalizedHits = 0
+  let fallbackHits = 0
+
+  for (const [provider, models] of Object.entries(MODEL_REGISTRY)) {
+    for (const [model, entry] of Object.entries(models ?? {})) {
+      const resolution = getEffortsForRegistryModel({
+        provider,
+        model,
+        supportsReasoning: Boolean(entry.capabilities?.reasoning),
+        lookup: input.lookup,
+        variants: input.variants,
+      })
+
+      if (resolution.source === 'exact')
+        exactHits++
+      else if (resolution.source === 'unique')
+        uniqueHits++
+      else if (resolution.source === 'normalized')
+        normalizedHits++
+      else if (resolution.source === 'fallback')
+        fallbackHits++
+
+      effortsByModel.set(keyOf(provider, model), resolution.efforts)
+    }
+  }
+
+  return {
+    effortsByModel,
+    stats: {
+      exactHits,
+      uniqueHits,
+      normalizedHits,
+      fallbackHits,
+    },
+  }
+}
+
+function buildRegistryRecords(effortsByModel: Map<string, string[]>): RegistryRecord[] {
+  const records: RegistryRecord[] = []
+
+  for (const [provider, models] of Object.entries(MODEL_REGISTRY)) {
+    for (const [model, entry] of Object.entries(models ?? {})) {
+      records.push({
+        provider,
+        model,
+        base: deriveFamilyBase(model),
+        reasoning: Boolean(entry.capabilities?.reasoning),
+        efforts: effortsByModel.get(keyOf(provider, model)) ?? [],
+      })
+    }
+  }
+
+  return records
+}
+
+function pickDefaultModel(base: string, group: RegistryRecord[]): RegistryRecord {
+  const sorted = [...group].sort((a, b) => a.model.localeCompare(b.model))
+  const nonReasoning = sorted.filter(model => !model.reasoning)
+
+  if (nonReasoning.length > 0)
+    return nonReasoning.find(model => model.model === base) ?? nonReasoning[0]!
+
+  return sorted.find(model => model.model === base) ?? sorted[0]!
+}
+
+function isGenericReasoningVariant(model: string): boolean {
+  return /-(reasoning|thinking|adaptive)$/i.test(model)
+    || /-(thinking|reasoning)-preview$/i.test(model)
+}
+
+function pickReasoningModel(base: string, group: RegistryRecord[]): RegistryRecord | undefined {
+  const reasoningModels = group.filter(model => model.reasoning)
+  if (reasoningModels.length === 0)
+    return undefined
+
+  const sorted = [...reasoningModels].sort((a, b) => {
+    const effortDiff = effortScore(b.efforts) - effortScore(a.efforts)
+    if (effortDiff !== 0)
+      return effortDiff
+
+    const aBase = a.model === base ? 1 : 0
+    const bBase = b.model === base ? 1 : 0
+    if (aBase !== bBase)
+      return bBase - aBase
+
+    const aGeneric = isGenericReasoningVariant(a.model) ? 1 : 0
+    const bGeneric = isGenericReasoningVariant(b.model) ? 1 : 0
+    if (aGeneric !== bGeneric)
+      return bGeneric - aGeneric
+
+    return a.model.localeCompare(b.model)
+  })
+
+  return sorted[0]
+}
+
+function buildGroupSpec(base: string, group: RegistryRecord[]): ReasoningGroupSpec | undefined {
+  const defaultModel = pickDefaultModel(base, group)
+  const reasoningModel = pickReasoningModel(base, group)
+  if (!reasoningModel)
+    return undefined
+
+  const efforts = normalizeEfforts(reasoningModel.efforts.filter(effort => effort !== 'none'))
+
+  if (efforts.length === 0 && reasoningModel.model === defaultModel.model)
+    return undefined
+
+  return {
+    defaultModel: defaultModel.model,
+    model: reasoningModel.model,
+    efforts: efforts.length > 0 ? efforts : undefined,
+  }
+}
+
+function buildReasoningGroupData(records: RegistryRecord[]): ReasoningGroupData {
+  const groups = new Map<string, { provider: string, base: string, records: RegistryRecord[] }>()
+
+  for (const record of records) {
+    const groupKey = keyOf(record.provider, record.base)
+    const group = groups.get(groupKey)
+
+    if (group)
+      group.records.push(record)
+    else
+      groups.set(groupKey, { provider: record.provider, base: record.base, records: [record] })
+  }
+
+  const specs = new Map<string, ReasoningGroupSpec>()
+  const modelToGroup = new Map<string, string>()
+
+  for (const [groupKey, group] of groups) {
+    const spec = buildGroupSpec(group.base, group.records)
+    if (!spec)
+      continue
+
+    specs.set(groupKey, spec)
+    for (const record of group.records)
+      modelToGroup.set(keyOf(group.provider, record.model), groupKey)
+  }
+
+  return {
+    groups: specs,
+    modelToGroup,
+  }
+}
+
+function removeReasoningMetadata(body: string): string {
+  return body
+    .replace(/,\s*reasoningEfforts:\s*\[[^\]]*\]/g, '')
+    .replace(/,\s*reasoningControl:\s*\{.*\}$/g, '')
+    .replace(/^\s*reasoningEfforts:\s*\[[^\]]*\],\s*/g, '')
+    .replace(/^\s*reasoningControl:\s*\{.*\},\s*/g, '')
+    .replace(/^\s*reasoningEfforts:\s*\[[^\]]*\]\s*$/g, '')
+    .replace(/^\s*reasoningControl:\s*\{.*\}\s*$/g, '')
+    .trim()
+}
+
+function stripReasoningFromLine(line: string): { line: string, changed: boolean } {
+  const match = line.match(/^(\s+'[^']+':\s*\{)\s*(.*?)\s*(\},?)\s*$/)
+  if (!match)
+    return { line, changed: false }
+
+  const [, prefix, rawBody, suffix] = match
+  const cleanedBody = removeReasoningMetadata(rawBody)
+  if (cleanedBody === rawBody)
+    return { line, changed: false }
+
+  return {
+    line: `${prefix} ${cleanedBody} ${suffix}`,
+    changed: true,
+  }
+}
+
+function cleanRegistrySource(source: string): { source: string, changedLines: number } {
+  const lines = source.split('\n')
+  let changedLines = 0
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!
-
-    const providerMatch = line.match(/^\s+'([^']+)':\s*\{$/)
-    if (providerMatch) {
-      currentProvider = providerMatch[1]!
-      continue
-    }
-
-    if (line.match(/^\s+\},?\s*$/) && currentProvider && !line.includes('contextWindow')) {
-      currentProvider = null
-      continue
-    }
-
-    if (!currentProvider)
+    const next = stripReasoningFromLine(lines[i]!)
+    if (!next.changed)
       continue
 
-    const modelMatch = line.match(/^\s+'([^']+)':\s*\{.*\},?\s*$/)
-    if (!modelMatch)
-      continue
-
-    const model = modelMatch[1]!
-    const efforts = effortsByModel.get(keyOf(currentProvider, model)) ?? []
-
-    const replaced = replaceReasoningEfforts(line, efforts)
-    if (replaced.line === line)
-      continue
-
-    touchedLines++
-    if (!replaced.had && replaced.has)
-      added++
-    else if (replaced.had && !replaced.has)
-      removed++
-    else
-      updated++
-
-    lines[i] = replaced.line
+    lines[i] = next.line
+    changedLines++
   }
 
   return {
     source: lines.join('\n'),
-    touchedLines,
-    added,
-    updated,
-    removed,
+    changedLines,
   }
+}
+
+function toEffortLiteral(efforts: string[] | undefined): string {
+  if (!efforts || efforts.length === 0)
+    return 'undefined'
+
+  return `[${efforts.map(effort => `'${effort}'`).join(', ')}]`
+}
+
+function generateReasoningDataSource(data: ReasoningGroupData): string {
+  const groupEntries = Array.from(data.groups.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  const modelEntries = Array.from(data.modelToGroup.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+
+  const groupLines = groupEntries
+    .map(([key, spec]) => {
+      const efforts = toEffortLiteral(spec.efforts)
+      return `  '${key}': { defaultModel: '${spec.defaultModel}', model: '${spec.model}', efforts: ${efforts} },`
+    })
+    .join('\n')
+
+  const modelLines = modelEntries
+    .map(([modelKey, groupKey]) => `  '${modelKey}': '${groupKey}',`)
+    .join('\n')
+
+  return `import type { ReasoningControl } from './types'
+
+interface ReasoningGroupSpec {
+  defaultModel: string
+  model: string
+  efforts: readonly string[] | undefined
+}
+
+const REASONING_GROUP_SPECS: Record<string, ReasoningGroupSpec> = {
+${groupLines}
+}
+
+const MODEL_TO_REASONING_GROUP: Record<string, string> = {
+${modelLines}
+}
+
+function keyOf(provider: string, model: string): string {
+  return \`\${provider.toLowerCase()}:\${model.toLowerCase()}\`
+}
+
+function buildControl(spec: ReasoningGroupSpec): ReasoningControl {
+  const options = [{ id: 'default', model: spec.defaultModel }] as ReasoningControl['options']
+
+  if (spec.efforts && spec.efforts.length > 0) {
+    for (const effort of spec.efforts) {
+      options.push({
+        id: effort,
+        model: spec.model,
+        effort,
+      })
+    }
+  }
+  else if (spec.model !== spec.defaultModel) {
+    options.push({
+      id: 'thinking',
+      model: spec.model,
+    })
+  }
+
+  return {
+    default: 'default',
+    options,
+  }
+}
+
+export function getModelReasoningControl(provider: string, model: string): ReasoningControl | undefined {
+  const modelKey = keyOf(provider, model)
+  const groupKey = MODEL_TO_REASONING_GROUP[modelKey]
+  if (!groupKey)
+    return undefined
+
+  const spec = REASONING_GROUP_SPECS[groupKey]
+  if (!spec)
+    return undefined
+
+  return buildControl(spec)
+}
+`
 }
 
 async function fetchText(url: string): Promise<string> {
@@ -472,71 +758,6 @@ async function resolveBranchSha(branch: string): Promise<string | null> {
   return typeof payload.sha === 'string' ? payload.sha : null
 }
 
-function getEffortsForRegistryModel(input: {
-  provider: string
-  model: string
-  supportsReasoning: boolean
-  lookup: EffortLookup
-  variants: VariantsFn
-}): { efforts: string[], source: 'exact' | 'unique' | 'normalized' | 'fallback' | 'none' } {
-  const { provider, model, supportsReasoning, lookup, variants } = input
-  if (!supportsReasoning)
-    return { efforts: [], source: 'none' }
-
-  const candidates = modelIDCandidates(model)
-
-  const exactMatches: string[][] = []
-  for (const candidate of candidates) {
-    const exactHit = lookup.exact.get(keyOf(provider, candidate))
-    if (exactHit)
-      exactMatches.push(exactHit)
-  }
-  if (exactMatches.length > 0)
-    return { efforts: pickBestEfforts(exactMatches), source: 'exact' }
-
-  const uniqueMatches: string[][] = []
-  for (const candidate of candidates) {
-    const uniqueHit = lookup.uniqueByModel.get(candidate.toLowerCase())
-    if (uniqueHit)
-      uniqueMatches.push(uniqueHit)
-  }
-  if (uniqueMatches.length > 0)
-    return { efforts: pickBestEfforts(uniqueMatches), source: 'unique' }
-
-  const normalizedMatches: string[][] = []
-  for (const candidate of candidates) {
-    const normalizedHit = lookup.uniqueByNormalizedModel.get(normalizeModelID(candidate))
-    if (normalizedHit)
-      normalizedMatches.push(normalizedHit)
-  }
-  if (normalizedMatches.length > 0)
-    return { efforts: pickBestEfforts(normalizedMatches), source: 'normalized' }
-
-  const npm = PROVIDER_NPM_FALLBACK[provider] ?? '@ai-sdk/openai-compatible'
-  const fallbackMatches: string[][] = []
-  for (const candidate of candidates) {
-    const modelLookupKey = candidate.toLowerCase()
-    const normalizedModelLookupKey = normalizeModelID(candidate)
-
-    const runtimeModel = toRuntimeModel({
-      providerID: provider,
-      modelID: candidate,
-      npm,
-      reasoning: true,
-      releaseDate: lookup.releaseDateByModel.get(modelLookupKey) ?? lookup.releaseDateByNormalizedModel.get(normalizedModelLookupKey),
-    })
-
-    const efforts = getEfforts(variants, runtimeModel)
-    if (efforts.length > 0)
-      fallbackMatches.push(efforts)
-  }
-
-  return {
-    efforts: pickBestEfforts(fallbackMatches),
-    source: 'fallback',
-  }
-}
-
 async function main() {
   const rawArgs = process.argv.slice(2)
   const args = new Set(rawArgs)
@@ -548,83 +769,68 @@ async function main() {
   const transformUrl = `https://raw.githubusercontent.com/${OPENCODE_REPO}/${ref}/packages/opencode/src/provider/transform.ts`
   const resolvedSha = pinnedSha ?? await resolveBranchSha(OPENCODE_BRANCH)
 
-  console.log(`📦 Fetching OpenCode transform.ts (${ref})`)
+  console.log(`Fetching OpenCode transform.ts (${ref})`)
   const transformSource = await fetchText(transformUrl)
 
   if (resolvedSha)
-    console.log(`   Upstream SHA: ${resolvedSha.slice(0, 12)}`)
+    console.log(`Upstream SHA: ${resolvedSha.slice(0, 12)}`)
 
-  console.log('📦 Fetching models.dev provider catalog')
+  console.log('Fetching models.dev provider catalog')
   const modelsDev = await fetchModelsDev()
 
-  console.log('🧠 Building reasoning evaluator from transform.ts')
+  console.log('Building reasoning evaluator from transform.ts')
   const variants = buildVariantsEvaluator(transformSource)
   const lookup = buildLookup(modelsDev, variants)
 
-  let exactHits = 0
-  let uniqueHits = 0
-  let normalizedHits = 0
-  let fallbackHits = 0
+  const resolution = resolveEffortsForRegistry({ lookup, variants })
+  const records = buildRegistryRecords(resolution.effortsByModel)
+  const groupData = buildReasoningGroupData(records)
 
-  const effortsByModel = new Map<string, string[]>()
+  const registrySource = await fs.readFile(REGISTRY_PATH, 'utf8')
+  const cleanedRegistry = cleanRegistrySource(registrySource)
 
-  for (const [provider, models] of Object.entries(MODEL_REGISTRY)) {
-    for (const [model, entry] of Object.entries(models ?? {})) {
-      const resolution = getEffortsForRegistryModel({
-        provider,
-        model,
-        supportsReasoning: Boolean(entry.capabilities?.reasoning),
-        lookup,
-        variants,
-      })
+  const nextReasoningData = generateReasoningDataSource(groupData)
+  const currentReasoningData = await fs.readFile(REASONING_DATA_PATH, 'utf8').catch(() => '')
+  const reasoningDataChanged = currentReasoningData !== nextReasoningData
 
-      if (resolution.source === 'exact')
-        exactHits++
-      else if (resolution.source === 'unique')
-        uniqueHits++
-      else if (resolution.source === 'normalized')
-        normalizedHits++
-      else if (resolution.source === 'fallback')
-        fallbackHits++
-
-      effortsByModel.set(keyOf(provider, model), resolution.efforts)
-    }
-  }
-
-  const source = await fs.readFile(REGISTRY_PATH, 'utf8')
-  const result = applyRegistryUpdates(source, effortsByModel)
-
-  const modelsWithEfforts = Array.from(effortsByModel.values()).filter(efforts => efforts.length > 0).length
+  const toggleControls = Array.from(groupData.groups.values()).filter(spec => !spec.efforts || spec.efforts.length === 0).length
+  const effortControls = Array.from(groupData.groups.values()).filter(spec => Boolean(spec.efforts && spec.efforts.length > 0)).length
 
   console.log()
-  console.log('📊 Reasoning effort resolution:')
-  console.log(`   Models with reasoning options: ${modelsWithEfforts}`)
-  console.log(`   Exact matches: ${exactHits}`)
-  console.log(`   Unique model-id matches: ${uniqueHits}`)
-  console.log(`   Normalized model-id matches: ${normalizedHits}`)
-  console.log(`   Fallback evaluations: ${fallbackHits}`)
+  console.log('Reasoning resolution:')
+  console.log(`  Exact matches: ${resolution.stats.exactHits}`)
+  console.log(`  Unique model-id matches: ${resolution.stats.uniqueHits}`)
+  console.log(`  Normalized model-id matches: ${resolution.stats.normalizedHits}`)
+  console.log(`  Fallback evaluations: ${resolution.stats.fallbackHits}`)
+  console.log(`  Reasoning groups: ${groupData.groups.size}`)
+  console.log(`  Models with reasoning control: ${groupData.modelToGroup.size}`)
+  console.log(`  Toggle controls: ${toggleControls}`)
+  console.log(`  Effort controls: ${effortControls}`)
 
   console.log()
-  if (result.touchedLines === 0) {
-    console.log('✅ registry.ts already up to date.')
+  if (cleanedRegistry.changedLines === 0 && !reasoningDataChanged) {
+    console.log('registry and reasoning data are already up to date')
     return
   }
 
-  console.log(`✏️  Updated ${result.touchedLines} registry entries`)
-  console.log(`   Added reasoningEfforts: ${result.added}`)
-  console.log(`   Updated reasoningEfforts: ${result.updated}`)
-  console.log(`   Removed reasoningEfforts: ${result.removed}`)
+  console.log(`registry.ts cleaned lines: ${cleanedRegistry.changedLines}`)
+  console.log(`reasoning-data.ts updated: ${reasoningDataChanged ? 'yes' : 'no'}`)
 
   if (dryRun) {
-    console.log('🔍 Dry run: no files written.')
+    console.log('dry run: no files written')
     return
   }
 
-  await fs.writeFile(REGISTRY_PATH, result.source, 'utf8')
-  console.log(`✅ Wrote updates to ${REGISTRY_PATH}`)
+  if (cleanedRegistry.changedLines > 0)
+    await fs.writeFile(REGISTRY_PATH, cleanedRegistry.source, 'utf8')
+
+  if (reasoningDataChanged)
+    await fs.writeFile(REASONING_DATA_PATH, nextReasoningData, 'utf8')
+
+  console.log('updated reasoning metadata files')
 }
 
 main().catch((error) => {
-  console.error('❌ reasoning script failed:', error)
+  console.error('reasoning script failed:', error)
   process.exit(1)
 })

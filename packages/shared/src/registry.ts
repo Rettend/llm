@@ -1,11 +1,12 @@
-import type { ReasoningEffort, Status } from './types'
+import type { ReasoningControl, Status } from './types'
+import { getModelReasoningControl } from './reasoning-data'
 
 export type ModelStatus = Status
 
 export interface ModelRegistry {
   status: ModelStatus
   contextWindow: number
-  reasoningEfforts?: readonly ReasoningEffort[]
+  reasoningControl?: ReasoningControl
   capabilities: {
     text: boolean
     vision?: boolean
@@ -59,7 +60,6 @@ function _(...keys: CapabilityKey[]): CapabilityFlags {
 interface FlexibleModelRegistry {
   status?: ModelStatus
   contextWindow: number
-  reasoningEfforts?: readonly ReasoningEffort[]
   capabilities: readonly CapabilityKey[] | CapabilityFlags
 }
 
@@ -78,7 +78,6 @@ function defineModelRegistry<T extends FlexibleRegistryMap>(map: T): { [P in key
         continue
       out[provider][model] = {
         contextWindow: def.contextWindow,
-        reasoningEfforts: def.reasoningEfforts ? [...def.reasoningEfforts] : undefined,
         capabilities: toFlags(def.capabilities),
         status: def.status ?? 'latest',
       }
@@ -89,23 +88,23 @@ function defineModelRegistry<T extends FlexibleRegistryMap>(map: T): { [P in key
 
 export const MODEL_REGISTRY = defineModelRegistry({
   'openai': {
-    'gpt-5-3-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high', 'xhigh'] },
-    'gpt-5-2': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['none', 'low', 'medium', 'high', 'xhigh'] },
-    'gpt-5-2-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high', 'xhigh'] },
-    'gpt-5-2-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
+    'gpt-5-3-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-2': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-2-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-2-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
     'gpt-5-2-non-reasoning': { contextWindow: 400_000, capabilities: _(text, vision) },
-    'gpt-5-1-codex-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5-mini-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-5-nano': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5-nano-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-oss-120b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-oss-20b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-5-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5-mini-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5-nano-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
+    'gpt-5-1-codex-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-mini-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning) },
+    'gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-nano': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-nano-medium': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-oss-120b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning) },
+    'gpt-oss-20b-low': { contextWindow: 131_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-mini-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-nano-minimal': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
   },
 
   'xai': {
@@ -120,28 +119,28 @@ export const MODEL_REGISTRY = defineModelRegistry({
 
   'anthropic': {
     'claude-opus-4-6': { contextWindow: 200_000, capabilities: _(text, vision) },
-    'claude-opus-4-6-adaptive': { contextWindow: 200_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high', 'max'] },
+    'claude-opus-4-6-adaptive': { contextWindow: 200_000, capabilities: _(text, vision, reasoning) },
     'claude-sonnet-4-6': { contextWindow: 200_000, capabilities: _(text, vision) },
-    'claude-sonnet-4-6-adaptive': { contextWindow: 200_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high', 'max'] },
+    'claude-sonnet-4-6-adaptive': { contextWindow: 200_000, capabilities: _(text, vision, reasoning) },
     'claude-sonnet-4-6-non-reasoning-low-effort': { contextWindow: 200_000, capabilities: _(text, vision) },
     'claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision) },
-    'claude-opus-4-5-thinking': { contextWindow: 200_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['high', 'max'] },
+    'claude-opus-4-5-thinking': { contextWindow: 200_000, capabilities: _(text, vision, reasoning) },
     'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision) },
-    'claude-4-5-sonnet-thinking': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['high', 'max'] },
+    'claude-4-5-sonnet-thinking': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning) },
     'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision) },
-    'claude-4-5-haiku-reasoning': { contextWindow: 200_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['high', 'max'] },
+    'claude-4-5-haiku-reasoning': { contextWindow: 200_000, capabilities: _(text, vision, reasoning) },
   },
 
   'google': {
-    'gemini-3-1-flash-lite-preview': { contextWindow: 1_000_000, capabilities: _(text, vision, audio, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gemini-3-1-pro-preview': { contextWindow: 1_000_000, capabilities: _(text, vision, audio, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gemini-3-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['low', 'high'] },
-    'gemini-3-pro-low': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['low', 'high'] },
+    'gemini-3-1-flash-lite-preview': { contextWindow: 1_000_000, capabilities: _(text, vision, audio, reasoning) },
+    'gemini-3-1-pro-preview': { contextWindow: 1_000_000, capabilities: _(text, vision, audio, reasoning) },
+    'gemini-3-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio) },
+    'gemini-3-pro-low': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio) },
     'gemini-3-flash': { contextWindow: 1_048_576, capabilities: _(text, vision, audio) },
-    'gemini-3-flash-reasoning': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['low', 'high'] },
-    'gemini-2-5-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['high', 'max'] },
-    'gemini-2-5-flash': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio), reasoningEfforts: ['high', 'max'] },
-    'gemini-2-5-flash-lite': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning), reasoningEfforts: ['high', 'max'] },
+    'gemini-3-flash-reasoning': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio) },
+    'gemini-2-5-pro': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio) },
+    'gemini-2-5-flash': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning, audio) },
+    'gemini-2-5-flash-lite': { contextWindow: 1_048_576, capabilities: _(text, vision, reasoning) },
     'gemma-3-27b': { contextWindow: 128_000, capabilities: _(text, vision) },
     'gemma-3-12b': { contextWindow: 128_000, capabilities: _(text, vision) },
     'gemma-3n-e4b': { contextWindow: 32_000, capabilities: _(text, vision, audio) },
@@ -171,36 +170,36 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'alibaba': {
-    'qwen3-5-122b-a10b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-5-122b-a10b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning) },
     'qwen3-5-122b-a10b-non-reasoning': { contextWindow: 260_000, capabilities: _(text, vision) },
-    'qwen3-5-27b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-5-27b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning) },
     'qwen3-5-27b-non-reasoning': { contextWindow: 260_000, capabilities: _(text, vision) },
-    'qwen3-5-35b-a3b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-5-35b-a3b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning) },
     'qwen3-5-35b-a3b-non-reasoning': { contextWindow: 260_000, capabilities: _(text, vision) },
-    'qwen3-5-397b-a17b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-5-397b-a17b': { contextWindow: 260_000, capabilities: _(text, vision, reasoning) },
     'qwen3-5-397b-a17b-non-reasoning': { contextWindow: 260_000, capabilities: _(text, vision) },
     'qwen3-coder-next': { contextWindow: 260_000, capabilities: _(text) },
-    'qwen3-max-thinking-preview': { contextWindow: 260_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'qwen3-235b-a22b-2507': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'qwen3-max': { contextWindow: 262_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-max-thinking-preview': { contextWindow: 260_000, capabilities: _(text, reasoning) },
+    'qwen3-235b-a22b-2507': { contextWindow: 256_000, capabilities: _(text, reasoning) },
+    'qwen3-max': { contextWindow: 262_000, capabilities: _(text, reasoning) },
     'qwen3-vl-235b-a22b-instruct': { contextWindow: 262_000, capabilities: _(text, vision) },
-    'qwen3-vl-235b-a22b-reasoning': { contextWindow: 262_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-vl-235b-a22b-reasoning': { contextWindow: 262_000, capabilities: _(text, vision, reasoning) },
     'qwen3-next-80b-a3b-instruct': { contextWindow: 262_000, capabilities: _(text) },
-    'qwen3-next-80b-a3b-reasoning': { contextWindow: 262_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-next-80b-a3b-reasoning': { contextWindow: 262_000, capabilities: _(text, reasoning) },
     'qwen3-vl-32b-instruct': { contextWindow: 256_000, capabilities: _(text, vision) },
-    'qwen3-vl-32b-reasoning': { contextWindow: 256_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'qwen3-30b-a3b-2507': { contextWindow: 262_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'qwen3-235b-2507': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-vl-32b-reasoning': { contextWindow: 256_000, capabilities: _(text, vision, reasoning) },
+    'qwen3-30b-a3b-2507': { contextWindow: 262_000, capabilities: _(text, reasoning) },
+    'qwen3-235b-2507': { contextWindow: 256_000, capabilities: _(text, reasoning) },
     'qwen3-vl-30b-a3b-instruct': { contextWindow: 256_000, capabilities: _(text, vision) },
-    'qwen3-vl-30b-a3b-reasoning': { contextWindow: 256_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-vl-30b-a3b-reasoning': { contextWindow: 256_000, capabilities: _(text, vision, reasoning) },
     'qwen3-4b-2507-instruct': { contextWindow: 262_000, capabilities: _(text) },
     'qwen3-coder-480b-a35b-instruct': { contextWindow: 262_000, capabilities: _(text) },
     'qwen3-omni-30b-a3b-instruct': { contextWindow: 66_000, capabilities: _(text, audio) },
-    'qwen3-omni-30b-a3b-reasoning': { contextWindow: 66_000, capabilities: _(text, reasoning, audio), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-omni-30b-a3b-reasoning': { contextWindow: 66_000, capabilities: _(text, reasoning, audio) },
     'qwen3-coder-30b-a3b-instruct': { contextWindow: 262_000, capabilities: _(text) },
-    'qwen3-vl-8b-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-vl-8b-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning, vision) },
     'qwen3-vl-8b-instruct': { contextWindow: 256_000, capabilities: _(text, vision) },
-    'qwen3-vl-4b-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
+    'qwen3-vl-4b-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning, vision) },
     'qwen3-vl-4b-instruct': { contextWindow: 256_000, capabilities: _(text, vision) },
   },
 
@@ -231,57 +230,57 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'bytedance_seed': {
-    'seed-oss-36b-instruct': { contextWindow: 512_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'doubao-seed-1-8': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'doubao-seed-code': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'seed-oss-36b-instruct': { contextWindow: 512_000, capabilities: _(text, reasoning) },
+    'doubao-seed-1-8': { contextWindow: 256_000, capabilities: _(text, reasoning) },
+    'doubao-seed-code': { contextWindow: 256_000, capabilities: _(text, reasoning) },
   },
 
   'servicenow': {
-    'apriel-v1-6-15b-thinker': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'apriel-v1-6-15b-thinker': { contextWindow: 128_000, capabilities: _(text, reasoning) },
   },
 
   'nvidia': {
     'nvidia-nemotron-3-nano-30b-a3b': { contextWindow: 1_000_000, capabilities: _(text) },
-    'nvidia-nemotron-3-nano-30b-a3b-reasoning': { contextWindow: 1_000_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'nvidia-nemotron-3-nano-30b-a3b-reasoning': { contextWindow: 1_000_000, capabilities: _(text, reasoning) },
     'nvidia-nemotron-nano-12b-v2-vl': { contextWindow: 128_000, capabilities: _(text, vision) },
-    'nvidia-nemotron-nano-12b-v2-vl-reasoning': { contextWindow: 128_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
-    'llama-nemotron-super-49b-v1-5': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'llama-nemotron-ultra': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'nvidia-nemotron-nano-9b-v2': { contextWindow: 131_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'llama-3-3-nemotron-super-49b': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'llama-3-1-nemotron-nano-4b-v1-1': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'nvidia-nemotron-nano-12b-v2-vl-reasoning': { contextWindow: 128_000, capabilities: _(text, reasoning, vision) },
+    'llama-nemotron-super-49b-v1-5': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'llama-nemotron-ultra': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'nvidia-nemotron-nano-9b-v2': { contextWindow: 131_000, capabilities: _(text, reasoning) },
+    'llama-3-3-nemotron-super-49b': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'llama-3-1-nemotron-nano-4b-v1-1': { contextWindow: 128_000, capabilities: _(text, reasoning) },
     'llama-3-1-nemotron-70b': { contextWindow: 128_000, capabilities: _(text) },
   },
 
   'inclusionai': {
-    'ling-1t': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'ring-flash-2-0': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'ling-flash-2-0': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'ling-mini-2-0': { contextWindow: 131_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'ling-1t': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'ring-flash-2-0': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'ling-flash-2-0': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'ling-mini-2-0': { contextWindow: 131_000, capabilities: _(text, reasoning) },
   },
 
   'lg': {
-    'k-exaone': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'k-exaone': { contextWindow: 256_000, capabilities: _(text, reasoning) },
     'k-exaone-non-reasoning': { contextWindow: 256_000, capabilities: _(text) },
     'exaone-4-0-32b': { contextWindow: 131_000, capabilities: _(text) },
     'exaone-4-0-1-2b': { contextWindow: 64_000, capabilities: _(text) },
   },
 
   'nous-research': {
-    'hermes-4-405b': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'hermes-4-70b': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'hermes-4-405b': { contextWindow: 128_000, capabilities: _(text, reasoning) },
+    'hermes-4-70b': { contextWindow: 128_000, capabilities: _(text, reasoning) },
     'deephermes-3-mistral-24b-preview': { contextWindow: 32_000, capabilities: _(text, reasoning) },
-    'deephermes-3-llama-3-1-8b-preview': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'deephermes-3-llama-3-1-8b-preview': { contextWindow: 128_000, capabilities: _(text, reasoning) },
   },
 
   'upstage': {
-    'solar-open-100b-reasoning': { contextWindow: 100_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'solar-pro-2': { contextWindow: 66_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'solar-open-100b-reasoning': { contextWindow: 100_000, capabilities: _(text, reasoning) },
+    'solar-pro-2': { contextWindow: 66_000, capabilities: _(text, vision, reasoning) },
   },
 
   'meta': {
-    'llama-4-maverick': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'llama-4-scout': { contextWindow: 10_000_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'llama-4-maverick': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning) },
+    'llama-4-scout': { contextWindow: 10_000_000, capabilities: _(text, vision, reasoning) },
     'llama-3-1-405b': { contextWindow: 128_000, capabilities: _(text) },
     'llama-3-3-70b': { contextWindow: 128_000, capabilities: _(text) },
     'llama-3-2-90b-vision': { contextWindow: 128_000, capabilities: _(text, vision) },
@@ -289,20 +288,20 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'baidu': {
-    'ernie-5-0-thinking-preview': { contextWindow: 128_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
+    'ernie-5-0-thinking-preview': { contextWindow: 128_000, capabilities: _(text, reasoning, vision) },
     'ernie-4-5-300b-a47b': { contextWindow: 131_000, capabilities: _(text, vision) },
   },
 
   'aws': {
-    'nova-2-0-pro': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'nova-2-0-pro-reasoning-low': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'nova-2-0-pro-reasoning-medium': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'nova-2-0-pro': { contextWindow: 256_000, capabilities: _(text, reasoning) },
+    'nova-2-0-pro-reasoning-low': { contextWindow: 256_000, capabilities: _(text, reasoning) },
+    'nova-2-0-pro-reasoning-medium': { contextWindow: 256_000, capabilities: _(text, reasoning) },
     'nova-2-0-omni': { contextWindow: 256_000, capabilities: _(text, vision) },
-    'nova-2-0-omni-reasoning-low': { contextWindow: 256_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
-    'nova-2-0-omni-reasoning-medium': { contextWindow: 256_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
+    'nova-2-0-omni-reasoning-low': { contextWindow: 256_000, capabilities: _(text, reasoning, vision) },
+    'nova-2-0-omni-reasoning-medium': { contextWindow: 256_000, capabilities: _(text, reasoning, vision) },
     'nova-2-0-lite': { contextWindow: 1_000_000, capabilities: _(text) },
-    'nova-2-0-lite-reasoning-low': { contextWindow: 1_000_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'nova-2-0-lite-reasoning-medium': { contextWindow: 1_000_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'nova-2-0-lite-reasoning-low': { contextWindow: 1_000_000, capabilities: _(text, reasoning) },
+    'nova-2-0-lite-reasoning-medium': { contextWindow: 1_000_000, capabilities: _(text, reasoning) },
   },
 
   'cohere': {
@@ -310,20 +309,20 @@ export const MODEL_REGISTRY = defineModelRegistry({
   },
 
   'reka-ai': {
-    'reka-flash-3': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'reka-flash-3': { contextWindow: 128_000, capabilities: _(text, reasoning) },
   },
 
   'trillionlabs': {
-    'tri-21b-think-preview': { contextWindow: 32_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'tri-21b-think-v0-5': { contextWindow: 32_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'tri-21b-think-preview': { contextWindow: 32_000, capabilities: _(text, reasoning) },
+    'tri-21b-think-v0-5': { contextWindow: 32_000, capabilities: _(text, reasoning) },
   },
 
   'stepfun': {
-    'step3-vl-10b': { contextWindow: 66_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'step3-vl-10b': { contextWindow: 66_000, capabilities: _(text, vision, reasoning) },
   },
 
   'inception': {
-    'mercury-2': { contextWindow: 130_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'mercury-2': { contextWindow: 130_000, capabilities: _(text, reasoning) },
   },
 
   'ibm': {
@@ -337,28 +336,28 @@ export const MODEL_REGISTRY = defineModelRegistry({
 
   'azure': {
     'DeepSeek-V3.2': { contextWindow: 130_000, capabilities: _(text) },
-    'gpt-5.2': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-5.2-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['high', 'max'] },
-    'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'phi-4': { contextWindow: 16_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'phi-4-mini': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'gpt-5.2': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5.2-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'claude-opus-4-5': { contextWindow: 200_000, capabilities: _(text, vision, reasoning) },
+    'claude-4-5-sonnet': { contextWindow: 1_000_000, capabilities: _(text, vision, reasoning) },
+    'claude-4-5-haiku': { contextWindow: 200_000, capabilities: _(text, vision, reasoning) },
+    'phi-4': { contextWindow: 16_000, capabilities: _(text, reasoning) },
+    'phi-4-mini': { contextWindow: 128_000, capabilities: _(text, reasoning) },
     'phi-4-multimodal': { contextWindow: 128_000, capabilities: _(text, vision, audio) },
     'DeepSeek-V3.1': { contextWindow: 128_000, capabilities: _(text, reasoning) },
-    'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5-nano': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5-pro': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['minimal', 'low', 'medium', 'high'] },
-    'gpt-5.1': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-5.1-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'gpt-5-mini': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-nano': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5-pro': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5.1': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-5.1-codex': { contextWindow: 400_000, capabilities: _(text, vision, reasoning) },
+    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, vision, reasoning) },
     'grok-4-fast-non-reasoning': { contextWindow: 2_000_000, capabilities: _(text, vision) },
     'grok-4-fast-reasoning': { contextWindow: 2_000_000, capabilities: _(text, vision, reasoning) },
     'model-router': { contextWindow: 100_000, capabilities: _(text) },
   },
 
   'ai21-labs': {
-    'jamba-reasoning-3b': { contextWindow: 262_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'jamba-reasoning-3b': { contextWindow: 262_000, capabilities: _(text, reasoning) },
     'jamba-1-7-large': { contextWindow: 256_000, capabilities: _(text) },
     'jamba-1-7-mini': { contextWindow: 258_000, capabilities: _(text) },
   },
@@ -370,13 +369,13 @@ export const MODEL_REGISTRY = defineModelRegistry({
   'liquidai': {
     'lfm2-24b-a2b': { contextWindow: 33_000, capabilities: _(text) },
     'lfm2-5-1-2b-instruct': { contextWindow: 32_000, capabilities: _(text) },
-    'lfm2-5-1-2b-thinking': { contextWindow: 32_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'lfm2-5-1-2b-thinking': { contextWindow: 32_000, capabilities: _(text, reasoning) },
     'lfm2-5-vl-1-6b': { contextWindow: 32_000, capabilities: _(text, vision) },
   },
 
   'cerebras': {
     'zai-glm-4.7': { contextWindow: 131_000, capabilities: _(text, reasoning) },
-    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, reasoning) },
     'llama-3.3-70b': { contextWindow: 128_000, capabilities: _(text) },
     'qwen-3-235b-a22b-instruct-2507': { contextWindow: 131_000, capabilities: _(text) },
   },
@@ -386,49 +385,49 @@ export const MODEL_REGISTRY = defineModelRegistry({
     'meta-llama/llama-4-maverick-17b-128e-instruct': { contextWindow: 131_000, capabilities: _(text, vision) },
     'meta-llama/llama-4-scout-17b-16e-instruct': { contextWindow: 131_000, capabilities: _(text, vision) },
     'moonshotai/kimi-k2-instruct-0905': { contextWindow: 262_000, capabilities: _(text) },
-    'openai/gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, reasoning), reasoningEfforts: ['none', 'low', 'medium', 'high'] },
-    'openai/gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, reasoning), reasoningEfforts: ['none', 'low', 'medium', 'high'] },
+    'openai/gpt-oss-120b': { contextWindow: 131_000, capabilities: _(text, reasoning) },
+    'openai/gpt-oss-20b': { contextWindow: 131_000, capabilities: _(text, reasoning) },
   },
 
   'ai2': {
     'olmo-3-1-32b-instruct': { contextWindow: 66_000, capabilities: _(text) },
-    'olmo-3-1-32b-think': { contextWindow: 66_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'olmo-3-1-32b-think': { contextWindow: 66_000, capabilities: _(text, reasoning) },
     'olmo-3-7b-instruct': { contextWindow: 66_000, capabilities: _(text) },
-    'olmo-3-7b-think': { contextWindow: 66_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'olmo-3-7b-think': { contextWindow: 66_000, capabilities: _(text, reasoning) },
     'molmo2-8b': { contextWindow: 4_000, capabilities: _(text, vision) },
   },
 
   'korea-telecom': {
-    'mi-dm-k-2-5-pro-dec28': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'mi-dm-k-2-5-pro-dec28': { contextWindow: 128_000, capabilities: _(text, reasoning) },
   },
 
   'mbzuai': {
-    'k2-think-v2': { contextWindow: 260_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'k2-v2': { contextWindow: 262_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'k2-v2-low': { contextWindow: 100_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
-    'k2-v2-medium': { contextWindow: 100_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'k2-think-v2': { contextWindow: 260_000, capabilities: _(text, reasoning) },
+    'k2-v2': { contextWindow: 262_000, capabilities: _(text, reasoning) },
+    'k2-v2-low': { contextWindow: 100_000, capabilities: _(text, reasoning) },
+    'k2-v2-medium': { contextWindow: 100_000, capabilities: _(text, reasoning) },
   },
 
   'motif-technologies': {
-    'motif-2-12-7b': { contextWindow: 128_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'motif-2-12-7b': { contextWindow: 128_000, capabilities: _(text, reasoning) },
   },
 
   'naver': {
-    'hyperclova-x-seed-think-32b': { contextWindow: 128_000, capabilities: _(text, reasoning, vision), reasoningEfforts: ['low', 'medium', 'high'] },
+    'hyperclova-x-seed-think-32b': { contextWindow: 128_000, capabilities: _(text, reasoning, vision) },
   },
 
   'prime-intellect': {
-    'intellect-3': { contextWindow: 131_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'intellect-3': { contextWindow: 131_000, capabilities: _(text, reasoning) },
   },
 
   'tii-uae': {
-    'falcon-h1r-7b': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'falcon-h1r-7b': { contextWindow: 256_000, capabilities: _(text, reasoning) },
   },
 
   'xiaomi': {
-    'mimo-v2-0206': { contextWindow: 260_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'mimo-v2-0206': { contextWindow: 260_000, capabilities: _(text, reasoning) },
     'mimo-v2-flash': { contextWindow: 256_000, capabilities: _(text) },
-    'mimo-v2-flash-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning), reasoningEfforts: ['low', 'medium', 'high'] },
+    'mimo-v2-flash-reasoning': { contextWindow: 256_000, capabilities: _(text, reasoning) },
   },
 })
 
@@ -437,7 +436,18 @@ export const MODEL_REGISTRY = defineModelRegistry({
  */
 export function getModelRegistry(provider: string, modelValue: string): ModelRegistry | undefined {
   const group = (MODEL_REGISTRY as RegistryMap)[provider]
-  return group?.[modelValue]
+  const model = group?.[modelValue]
+  if (!model)
+    return undefined
+
+  const reasoningControl = getModelReasoningControl(provider, modelValue)
+  if (!reasoningControl)
+    return model
+
+  return {
+    ...model,
+    reasoningControl,
+  }
 }
 
 export type Registry = typeof MODEL_REGISTRY

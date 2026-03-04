@@ -56,8 +56,15 @@ export const modeSchema = t.Union([
   t.Literal('tool'),
 ])
 
-export const reasoningEffortSchema = t.String({
-  description: 'Reasoning effort level (e.g., "low", "medium", "high", "xhigh")',
+export const reasoningControlOptionSchema = t.Object({
+  id: t.String({ description: 'Reasoning option id (e.g., "default", "thinking", "high")' }),
+  model: t.String({ description: 'Model value to send when this option is selected' }),
+  effort: t.Optional(t.String({ description: 'Provider reasoning effort value for this option' })),
+})
+
+export const reasoningControlSchema = t.Object({
+  default: t.String({ description: 'Default reasoning option id' }),
+  options: t.Array(reasoningControlOptionSchema),
 })
 
 export const configSchema = t.Object({
@@ -71,7 +78,7 @@ export const modelSchema = t.Object({
   name: t.String({ description: 'Full display name of the model' }),
   alias: t.Optional(t.String({ description: 'Short name for UI dropdowns' })),
   capabilities: t.Optional(capabilitySchema),
-  reasoningEfforts: t.Optional(t.Array(reasoningEffortSchema)),
+  reasoningControl: t.Optional(reasoningControlSchema),
   iq: t.Optional(scoreSchema),
   speed: t.Optional(scoreSchema),
   metrics: t.Optional(metricsSchema),

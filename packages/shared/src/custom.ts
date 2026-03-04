@@ -63,7 +63,7 @@ export interface ModelOverride {
   capabilities?: Model['capabilities']
   iq?: Model['iq']
   speed?: Model['speed']
-  reasoningEfforts?: Model['reasoningEfforts']
+  reasoningControl?: Model['reasoningControl']
   metrics?: Partial<Model['metrics']>
   pricing?: Model['pricing']
   releaseDate?: Model['releaseDate']
@@ -80,7 +80,12 @@ function cloneModel(model: Model): Model {
   return {
     ...model,
     capabilities: model.capabilities ? { ...model.capabilities } : undefined,
-    reasoningEfforts: model.reasoningEfforts ? [...model.reasoningEfforts] : undefined,
+    reasoningControl: model.reasoningControl
+      ? {
+          default: model.reasoningControl.default,
+          options: model.reasoningControl.options.map(option => ({ ...option })),
+        }
+      : undefined,
     metrics: model.metrics ? { ...model.metrics } : undefined,
     pricing: model.pricing ? { ...model.pricing } : undefined,
     config: model.config ? { ...model.config } : undefined,
@@ -180,8 +185,14 @@ export function applyOverrides(
       model.iq = override.iq
     if (override.speed !== undefined)
       model.speed = override.speed
-    if (override.reasoningEfforts !== undefined)
-      model.reasoningEfforts = override.reasoningEfforts ? [...override.reasoningEfforts] : undefined
+    if (override.reasoningControl !== undefined) {
+      model.reasoningControl = override.reasoningControl
+        ? {
+            default: override.reasoningControl.default,
+            options: override.reasoningControl.options.map(option => ({ ...option })),
+          }
+        : undefined
+    }
     if (override.metrics !== undefined) {
       const current = model.metrics ?? {}
       model.metrics = override.metrics
