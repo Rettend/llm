@@ -1,7 +1,7 @@
 {
   "name": "@rttnd/llm",
   "type": "module",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "LLM Registry Client Library",
   "author": "Rettend <hi@rettend.me>",
   "license": "MIT",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@elysiajs/eden": "catalog:prod",
-    "@rttnd/llm-shared": "^1.5.0",
+    "@rttnd/llm-shared": "^1.5.1",
     "unstorage": "catalog:prod"
   },
   "devDependencies": {
