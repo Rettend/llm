@@ -87,10 +87,15 @@ interface RegistryRecord {
   efforts: string[]
 }
 
-interface ReasoningGroupSpec {
-  defaultModel: string
+interface ReasoningOptionSpec {
+  id: string
   model: string
-  efforts?: string[]
+  effort?: string
+}
+
+interface ReasoningGroupSpec {
+  default: 'default'
+  options: ReasoningOptionSpec[]
 }
 
 interface ReasoningGroupData {
@@ -539,6 +544,60 @@ function pickReasoningModel(base: string, group: RegistryRecord[]): RegistryReco
   return sorted[0]
 }
 
+function rankEffortVariantMatch(input: {
+  model: RegistryRecord
+  effort: string
+  reasoningModel: string
+}): number {
+  const { model, effort, reasoningModel } = input
+  if (!model.reasoning)
+    return Number.NEGATIVE_INFINITY
+
+  const value = model.model.toLowerCase()
+  const normalizedEffort = effort.toLowerCase()
+  let score = 0
+
+  if (model.model === reasoningModel)
+    score += 20
+
+  if (new RegExp(`(?:^|-)reasoning-${normalizedEffort}(?:-|$)`, 'i').test(value))
+    score += 300
+
+  if (new RegExp(`(?:^|-)${normalizedEffort}(?:-|$)`, 'i').test(value))
+    score += 180
+
+  if (value.endsWith(`-${normalizedEffort}`))
+    score += 40
+
+  if (value.includes('non-reasoning'))
+    score -= 300
+  if (value.includes('reasoning'))
+    score += 20
+
+  return score
+}
+
+function pickModelForEffort(input: {
+  effort: string
+  group: RegistryRecord[]
+  reasoningModel: string
+}): string {
+  const { effort, group, reasoningModel } = input
+
+  let best = reasoningModel
+  let bestScore = Number.NEGATIVE_INFINITY
+
+  for (const model of group) {
+    const score = rankEffortVariantMatch({ model, effort, reasoningModel })
+    if (score > bestScore) {
+      best = model.model
+      bestScore = score
+    }
+  }
+
+  return best
+}
+
 function buildGroupSpec(base: string, group: RegistryRecord[]): ReasoningGroupSpec | undefined {
   const defaultModel = pickDefaultModel(base, group)
   const reasoningModel = pickReasoningModel(base, group)
@@ -547,13 +606,39 @@ function buildGroupSpec(base: string, group: RegistryRecord[]): ReasoningGroupSp
 
   const efforts = normalizeEfforts(reasoningModel.efforts.filter(effort => effort !== 'none'))
 
-  if (efforts.length === 0 && reasoningModel.model === defaultModel.model)
+  const options: ReasoningOptionSpec[] = [
+    {
+      id: 'default',
+      model: defaultModel.model,
+    },
+  ]
+
+  if (efforts.length > 0) {
+    for (const effort of efforts) {
+      options.push({
+        id: effort,
+        model: pickModelForEffort({
+          effort,
+          group,
+          reasoningModel: reasoningModel.model,
+        }),
+        effort,
+      })
+    }
+  }
+  else if (reasoningModel.model !== defaultModel.model) {
+    options.push({
+      id: 'thinking',
+      model: reasoningModel.model,
+    })
+  }
+
+  if (options.length < 2)
     return undefined
 
   return {
-    defaultModel: defaultModel.model,
-    model: reasoningModel.model,
-    efforts: efforts.length > 0 ? efforts : undefined,
+    default: 'default',
+    options,
   }
 }
 
@@ -635,11 +720,16 @@ function cleanRegistrySource(source: string): { source: string, changedLines: nu
   }
 }
 
-function toEffortLiteral(efforts: string[] | undefined): string {
-  if (!efforts || efforts.length === 0)
-    return 'undefined'
+function toOptionsLiteral(options: ReasoningOptionSpec[]): string {
+  const parts = options
+    .map((option) => {
+      const values = [`id: '${option.id}'`, `model: '${option.model}'`]
+      if (option.effort)
+        values.push(`effort: '${option.effort}'`)
+      return `{ ${values.join(', ')} }`
+    })
 
-  return `[${efforts.map(effort => `'${effort}'`).join(', ')}]`
+  return `[${parts.join(', ')}]`
 }
 
 function generateReasoningDataSource(data: ReasoningGroupData): string {
@@ -648,8 +738,8 @@ function generateReasoningDataSource(data: ReasoningGroupData): string {
 
   const groupLines = groupEntries
     .map(([key, spec]) => {
-      const efforts = toEffortLiteral(spec.efforts)
-      return `  '${key}': { defaultModel: '${spec.defaultModel}', model: '${spec.model}', efforts: ${efforts} },`
+      const options = toOptionsLiteral(spec.options)
+      return `  '${key}': { default: '${spec.default}', options: ${options} },`
     })
     .join('\n')
 
@@ -660,9 +750,8 @@ function generateReasoningDataSource(data: ReasoningGroupData): string {
   return `import type { ReasoningControl } from './types'
 
 interface ReasoningGroupSpec {
-  defaultModel: string
-  model: string
-  efforts: readonly string[] | undefined
+  default: ReasoningControl['default']
+  options: ReasoningControl['options']
 }
 
 const REASONING_GROUP_SPECS: Record<string, ReasoningGroupSpec> = {
@@ -678,27 +767,9 @@ function keyOf(provider: string, model: string): string {
 }
 
 function buildControl(spec: ReasoningGroupSpec): ReasoningControl {
-  const options = [{ id: 'default', model: spec.defaultModel }] as ReasoningControl['options']
-
-  if (spec.efforts && spec.efforts.length > 0) {
-    for (const effort of spec.efforts) {
-      options.push({
-        id: effort,
-        model: spec.model,
-        effort,
-      })
-    }
-  }
-  else if (spec.model !== spec.defaultModel) {
-    options.push({
-      id: 'thinking',
-      model: spec.model,
-    })
-  }
-
   return {
-    default: 'default',
-    options,
+    default: spec.default,
+    options: spec.options.map(option => ({ ...option })),
   }
 }
 
@@ -793,8 +864,12 @@ async function main() {
   const currentReasoningData = await fs.readFile(REASONING_DATA_PATH, 'utf8').catch(() => '')
   const reasoningDataChanged = currentReasoningData !== nextReasoningData
 
-  const toggleControls = Array.from(groupData.groups.values()).filter(spec => !spec.efforts || spec.efforts.length === 0).length
-  const effortControls = Array.from(groupData.groups.values()).filter(spec => Boolean(spec.efforts && spec.efforts.length > 0)).length
+  const toggleControls = Array.from(groupData.groups.values())
+    .filter(spec => spec.options.some(option => option.id === 'thinking'))
+    .length
+  const effortControls = Array.from(groupData.groups.values())
+    .filter(spec => spec.options.some(option => option.effort !== undefined))
+    .length
 
   console.log()
   console.log('Reasoning resolution:')

@@ -1,4 +1,5 @@
 import type { AAModel, AAResponse, Manifest, Model, Provider, Status } from '@rttnd/llm-shared'
+import { canonicalizeModels } from '@rttnd/llm-shared'
 import { applyOverrides } from '@rttnd/llm-shared/custom'
 import { getModelRegistry } from '@rttnd/llm-shared/registry'
 import { OFFICIAL_MODEL_OVERRIDES, OFFICIAL_PROVIDER_OVERRIDES } from './custom/index'
@@ -128,6 +129,32 @@ function transformAAModel(aaModel: AAModel): Model {
   }
 }
 
+function applyRegistryMetadata(model: Model): Model {
+  const registryEntry = getModelRegistry(model.provider, model.value)
+  if (!registryEntry)
+    return model
+
+  const metrics = registryEntry.contextWindow !== undefined
+    ? {
+        ...(model.metrics ?? {}),
+        contextWindow: registryEntry.contextWindow,
+      }
+    : (model.metrics ? { ...model.metrics } : undefined)
+
+  return {
+    ...model,
+    capabilities: registryEntry.capabilities ?? model.capabilities,
+    reasoningControl: registryEntry.reasoningControl
+      ? {
+          default: registryEntry.reasoningControl.default,
+          options: registryEntry.reasoningControl.options.map(option => ({ ...option })),
+        }
+      : model.reasoningControl,
+    metrics,
+    status: resolveModelStatus(registryEntry.status ?? model.status, model.releaseDate),
+  }
+}
+
 function sortModels(models: Model[]): Model[] {
   return [...models].sort((a, b) => {
     if (a.provider === b.provider)
@@ -151,6 +178,14 @@ function toCanonicalManifest(providers: Provider[], models: Model[]): { provider
           default: model.reasoningControl.default,
           options: model.reasoningControl.options.map(option => ({ ...option })),
         }
+      : undefined,
+    variantValues: model.variantValues ? [...model.variantValues] : undefined,
+    reasoningProfiles: model.reasoningProfiles
+      ? model.reasoningProfiles.map(profile => ({
+          ...profile,
+          metrics: profile.metrics ? { ...profile.metrics } : undefined,
+          pricing: profile.pricing ? { ...profile.pricing } : undefined,
+        }))
       : undefined,
     metrics: model.metrics ? { ...model.metrics } : undefined,
     pricing: model.pricing ? { ...model.pricing } : undefined,
@@ -219,8 +254,11 @@ export async function fetchAndTransformManifest(apiKey: string): Promise<Manifes
     models: OFFICIAL_MODEL_OVERRIDES,
   })
 
+  const normalizedModels = models.map(applyRegistryMetadata)
+  const canonicalModels = canonicalizeModels(normalizedModels)
+
   const sortedProviders = sortProviders(providers)
-  const sortedModels = sortModels(models)
+  const sortedModels = sortModels(canonicalModels)
 
   const generatedAt = new Date().toISOString()
   const { etag, version } = await createManifestTags(sortedProviders, sortedModels)

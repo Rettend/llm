@@ -1,7 +1,7 @@
 import type { Model } from '../src/types'
 import { describe, expect, it } from 'bun:test'
 import { getModelRegistry } from '../src/registry'
-import { resolveReasoningSelection } from '../src/reasoning'
+import { canonicalizeModels, resolveReasoningProfile, resolveReasoningSelection } from '../src/reasoning'
 
 function makeModel(overrides: Partial<Model>): Model {
   return {
@@ -77,6 +77,74 @@ describe('registry reasoning metadata', () => {
         { id: 'default', model: 'kimi-k2-5-non-reasoning' },
         { id: 'thinking', model: 'kimi-k2-5' },
       ],
+    })
+  })
+
+  it('maps effort options to effort-specific model variants when available', () => {
+    const model = getModelRegistry('aws', 'nova-2-0-pro')
+    expect(model?.reasoningControl?.options).toEqual([
+      { id: 'default', model: 'nova-2-0-pro' },
+      { id: 'low', model: 'nova-2-0-pro-reasoning-low', effort: 'low' },
+      { id: 'medium', model: 'nova-2-0-pro-reasoning-medium', effort: 'medium' },
+      { id: 'high', model: 'nova-2-0-pro', effort: 'high' },
+    ])
+  })
+})
+
+describe('canonicalizeModels', () => {
+  it('collapses reasoning variants into one canonical model with profiles', () => {
+    const control = {
+      default: 'default' as const,
+      options: [
+        { id: 'default' as const, model: 'grok-4-fast-non-reasoning' },
+        { id: 'thinking' as const, model: 'grok-4-fast-reasoning' },
+      ],
+    }
+
+    const models = [
+      makeModel({
+        id: 'a',
+        provider: 'xai',
+        value: 'grok-4-fast-non-reasoning',
+        name: 'Grok 4 Fast (Non-reasoning)',
+        alias: 'Grok 4 Fast',
+        iq: 3,
+        speed: 5,
+        reasoningControl: control,
+      }),
+      makeModel({
+        id: 'b',
+        provider: 'xai',
+        value: 'grok-4-fast-reasoning',
+        name: 'Grok 4 Fast (Reasoning)',
+        alias: 'Grok 4 Fast',
+        iq: 4,
+        speed: 3,
+        reasoningControl: control,
+      }),
+    ]
+
+    const canonical = canonicalizeModels(models)
+    expect(canonical).toHaveLength(1)
+    expect(canonical[0]?.name).toBe('Grok 4 Fast')
+    expect(canonical[0]?.value).toBe('grok-4-fast')
+    expect(canonical[0]?.variantValues).toEqual(['grok-4-fast-non-reasoning', 'grok-4-fast-reasoning'])
+    expect(canonical[0]?.reasoningProfiles).toEqual([
+      { id: 'default', model: 'grok-4-fast-non-reasoning', iq: 3, speed: 5, metrics: undefined, pricing: undefined, status: undefined, releaseDate: undefined },
+      { id: 'thinking', model: 'grok-4-fast-reasoning', iq: 4, speed: 3, metrics: undefined, pricing: undefined, status: undefined, releaseDate: undefined },
+    ])
+
+    const thinking = resolveReasoningProfile(canonical[0]!, 'thinking')
+    expect(thinking).toEqual({
+      id: 'thinking',
+      model: 'grok-4-fast-reasoning',
+      effort: undefined,
+      iq: 4,
+      speed: 3,
+      metrics: undefined,
+      pricing: undefined,
+      status: undefined,
+      releaseDate: undefined,
     })
   })
 })
