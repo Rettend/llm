@@ -277,6 +277,12 @@ The default cron schedule is daily at 2 AM UTC in `wrangler.toml`:
 crons = [ "0 2 * * *" ]
 ```
 
+Trigger manually:
+
+```cmd
+bun --env-file=".env" -e "const token=process.env.CRON_AUTH_TOKEN; const r=await fetch('https://llm.rettend.me/cron/trigger',{method:'POST',headers:{Authorization:'Bearer '+token}}); console.log(r.status); console.log(await r.text());"
+```
+
 ## Architecture
 
 ### Data Flow
