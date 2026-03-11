@@ -59,7 +59,7 @@
   {"provider":"cerebras","value":"gpt-oss-120b","name":"gpt-oss-120B (high)","alias":"gpt-oss-120B","iq":1,"speed":5,"pricing":0.45,"status":"latest"},
   {"provider":"cerebras","value":"llama-3.3-70b","name":"llama-3.3-70b","alias":"llama-3.3-70b","iq":null,"speed":null,"pricing":0.9375,"status":"latest"},
   {"provider":"cerebras","value":"qwen-3-235b-a22b-instruct-2507","name":"qwen-3-235b-a22b-instruct-2507","alias":"qwen-3-235b-a22b-instruct-2507","iq":null,"speed":5,"pricing":0.75,"status":"latest"},
-  {"provider":"cohere","value":"command-a","name":"Command A","alias":"Command A","iq":0,"speed":1,"pricing":4.375,"status":"latest"},
+  {"provider":"cohere","value":"command-a","name":"Command A","alias":"Command A","iq":0,"speed":2,"pricing":4.375,"status":"latest"},
   {"provider":"deepseek","value":"deepseek-v3-2","name":"DeepSeek V3.2","alias":"DeepSeek V3.2","iq":1,"speed":1,"pricing":0.315,"status":"latest"},
   {"provider":"google","value":"gemini-2-5-flash","name":"Gemini 2.5 Flash","alias":"Gemini 2.5 Flash","iq":0,"speed":4,"pricing":0.85,"status":"latest"},
   {"provider":"google","value":"gemini-2-5-flash-lite","name":"Gemini 2.5 Flash-Lite","alias":"Gemini 2.5 Flash-Lite","iq":0,"speed":3,"pricing":0.175,"status":"latest"},
@@ -130,7 +130,7 @@
   {"provider":"nous-research","value":"deephermes-3-mistral-24b-preview","name":"DeepHermes 3 - Mistral 24B Preview","alias":"DeepHermes 3 - Mistral 24B Preview","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"nvidia","value":"llama-3-3-nemotron-super-49b","name":"Llama 3.3 Nemotron Super 49B v1","alias":"Llama 3.3 Nemotron Super 49B v1","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"nvidia","value":"llama-nemotron-super-49b-v1-5","name":"Llama Nemotron Super 49B v1.5","alias":"Llama Nemotron Super 49B v1.5","iq":0,"speed":2,"pricing":0.175,"status":"latest"},
-  {"provider":"nvidia","value":"nvidia-nemotron-3-nano-30b-a3b","name":"NVIDIA Nemotron 3 Nano 30B A3B","alias":"NVIDIA Nemotron 3 Nano 30B A3B","iq":0,"speed":4,"pricing":0.087,"status":"latest"},
+  {"provider":"nvidia","value":"nvidia-nemotron-3-nano-30b-a3b","name":"NVIDIA Nemotron 3 Nano 30B A3B","alias":"NVIDIA Nemotron 3 Nano 30B A3B","iq":0,"speed":3,"pricing":0.087,"status":"latest"},
   {"provider":"nvidia","value":"nvidia-nemotron-nano-12b-v2-vl","name":"NVIDIA Nemotron Nano 12B v2 VL","alias":"NVIDIA Nemotron Nano 12B v2 VL","iq":0,"speed":3,"pricing":0.3,"status":"latest"},
   {"provider":"nvidia","value":"nvidia-nemotron-nano-9b-v2","name":"NVIDIA Nemotron Nano 9B V2","alias":"NVIDIA Nemotron Nano 9B V2","iq":0,"speed":3,"pricing":0.102,"status":"latest"},
   {"provider":"openai","value":"gpt-5-1-codex-mini","name":"GPT-5.1 Codex mini (high)","alias":"GPT-5.1 Codex mini","iq":2,"speed":3,"pricing":0.688,"status":"latest"},
@@ -169,7 +169,7 @@
   {"provider":"xiaomi","value":"mimo-v2-0206","name":"MiMo-V2-Flash (Feb 2026)","alias":"MiMo-V2-Flash","iq":2,"speed":3,"pricing":0.15,"status":"latest"},
   {"provider":"xiaomi","value":"mimo-v2-flash","name":"MiMo-V2-Flash","alias":"MiMo-V2-Flash","iq":1,"speed":3,"pricing":0.15,"status":"latest"},
   {"provider":"zai","value":"glm-4-6v","name":"GLM-4.6V","alias":"GLM-4.6V","iq":0,"speed":0,"pricing":0.45,"status":"latest"},
-  {"provider":"zai","value":"glm-4-7","name":"GLM-4.7","alias":"GLM-4.7","iq":1,"speed":3,"pricing":0.938,"status":"latest"},
+  {"provider":"zai","value":"glm-4-7","name":"GLM-4.7","alias":"GLM-4.7","iq":1,"speed":2,"pricing":0.938,"status":"latest"},
   {"provider":"zai","value":"glm-4-7-flash","name":"GLM-4.7-Flash","alias":"GLM-4.7-Flash","iq":0,"speed":3,"pricing":0.152,"status":"latest"},
   {"provider":"zai","value":"glm-5","name":"GLM-5","alias":"GLM-5","iq":2,"speed":1,"pricing":1.55,"status":"latest"}
 ]
