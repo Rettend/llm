@@ -28,6 +28,7 @@
   {"value":"nous-research","name":"nous-research","status":"latest"},
   {"value":"nvidia","name":"nvidia","status":"latest"},
   {"value":"openai","name":"OpenAI","keyPlaceholder":"sk-...","website":"https://platform.openai.com/api-keys","status":"latest"},
+  {"value":"openbmb","name":"openbmb","status":"latest"},
   {"value":"perplexity","name":"perplexity","status":"latest"},
   {"value":"prime-intellect","name":"prime-intellect","status":"latest"},
   {"value":"reka-ai","name":"reka-ai","status":"latest"},
@@ -37,5 +38,6 @@
   {"value":"upstage","name":"upstage","status":"latest"},
   {"value":"xai","name":"xai","status":"latest"},
   {"value":"xiaomi","name":"xiaomi","status":"latest"},
-  {"value":"zai","name":"zai","status":"latest"}
+  {"value":"zai","name":"zai","status":"latest"},
+  {"value":"zyphra","name":"zyphra","status":"latest"}
 ]
