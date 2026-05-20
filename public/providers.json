@@ -8,6 +8,7 @@
   {"value":"baidu","name":"baidu","status":"latest"},
   {"value":"bytedance_seed","name":"bytedance_seed","status":"latest"},
   {"value":"cerebras","name":"Cerebras","website":"https://cloud.cerebras.ai/","status":"latest"},
+  {"value":"china-mobile","name":"china-mobile","status":"latest"},
   {"value":"cohere","name":"Cohere","website":"https://dashboard.cohere.com/api-keys","status":"latest"},
   {"value":"deepseek","name":"DeepSeek","website":"https://platform.deepseek.com/api_keys","status":"latest"},
   {"value":"google","name":"Google","keyPlaceholder":"AI...","website":"https://aistudio.google.com/app/apikey","status":"latest"},
