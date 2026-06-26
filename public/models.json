@@ -115,7 +115,7 @@
   {"provider":"mistral","value":"devstral-2","name":"Devstral 2","alias":"Devstral 2","iq":0,"speed":1,"pricing":0,"status":"latest"},
   {"provider":"mistral","value":"devstral-medium","name":"Devstral Medium","alias":"Devstral Medium","iq":0,"speed":1,"pricing":0.8,"status":"latest"},
   {"provider":"mistral","value":"devstral-small","name":"Devstral Small (Jul '25)","alias":"Devstral Small","iq":0,"speed":1,"pricing":0.15,"status":"latest"},
-  {"provider":"mistral","value":"devstral-small-2","name":"Devstral Small 2","alias":"Devstral Small 2","iq":0,"speed":1,"pricing":0,"status":"latest"},
+  {"provider":"mistral","value":"devstral-small-2","name":"Devstral Small 2","alias":"Devstral Small 2","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"mistral","value":"magistral-medium","name":"Magistral Medium 1","alias":"Magistral Medium 1","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"mistral","value":"magistral-small","name":"Magistral Small 1","alias":"Magistral Small 1","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"mistral","value":"ministral-3-14b","name":"Ministral 3 14B","alias":"Ministral 3 14B","iq":0,"speed":2,"pricing":0.2,"status":"latest"},
