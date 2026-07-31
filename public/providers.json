@@ -1,5 +1,4 @@
 [
-  {"value":"agnes-ai","name":"agnes-ai","status":"latest"},
   {"value":"ai2","name":"ai2","status":"latest"},
   {"value":"ai21-labs","name":"ai21-labs","status":"latest"},
   {"value":"alibaba","name":"alibaba","status":"latest"},
@@ -33,6 +32,7 @@
   {"value":"prime-intellect","name":"prime-intellect","status":"latest"},
   {"value":"reka-ai","name":"reka-ai","status":"latest"},
   {"value":"servicenow","name":"servicenow","status":"latest"},
+  {"value":"thinking-machines","name":"thinking-machines","status":"latest"},
   {"value":"tii-uae","name":"tii-uae","status":"latest"},
   {"value":"trillionlabs","name":"trillionlabs","status":"latest"},
   {"value":"upstage","name":"upstage","status":"latest"},
