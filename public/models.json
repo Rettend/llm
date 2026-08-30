@@ -113,7 +113,7 @@
   {"provider":"mbzuai","value":"k2-v2","name":"K2-V2 (high)","alias":"K2-V2","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"mbzuai","value":"k2-v2-low","name":"K2-V2 (low)","alias":"K2-V2","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"mbzuai","value":"k2-v2-medium","name":"K2-V2 (medium)","alias":"K2-V2","iq":0,"speed":0,"pricing":0,"status":"latest"},
-  {"provider":"meta","value":"llama-4-maverick","name":"Llama 4 Maverick","alias":"Llama 4 Maverick","iq":0,"speed":3,"pricing":0.422,"status":"latest"},
+  {"provider":"meta","value":"llama-4-maverick","name":"Llama 4 Maverick","alias":"Llama 4 Maverick","iq":0,"speed":2,"pricing":0.422,"status":"latest"},
   {"provider":"meta","value":"llama-4-scout","name":"Llama 4 Scout","alias":"Llama 4 Scout","iq":0,"speed":3,"pricing":0.3,"status":"latest"},
   {"provider":"minimax","value":"minimax-m2-1","name":"MiniMax-M2.1","alias":"MiniMax-M2.1","iq":1,"speed":0,"pricing":0.525,"status":"latest"},
   {"provider":"minimax","value":"minimax-m2-5","name":"MiniMax-M2.5","alias":"MiniMax-M2.5","iq":1,"speed":0,"pricing":0.525,"status":"latest"},
