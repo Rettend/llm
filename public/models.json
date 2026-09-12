@@ -1,4 +1,5 @@
 [
+  {"provider":"agnes-ai","value":"agnes-3-0-flash","name":"Agnes 3.0 Flash","alias":"Agnes 3.0 Flash","iq":2,"speed":4,"pricing":0.075,"status":"preview"},
   {"provider":"ai2","value":"molmo2-8b","name":"Molmo2-8B","alias":"Molmo2-8B","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"ai2","value":"olmo-3-1-32b-instruct","name":"Olmo 3.1 32B Instruct","alias":"Olmo 3.1 32B Instruct","iq":0,"speed":0,"pricing":0,"status":"latest"},
   {"provider":"ai2","value":"olmo-3-1-32b-think","name":"Olmo 3.1 32B Think","alias":"Olmo 3.1 32B Think","iq":0,"speed":0,"pricing":0,"status":"latest"},
@@ -149,7 +150,7 @@
   {"provider":"openai","value":"gpt-5-nano-minimal","name":"GPT-5 nano (minimal)","alias":"GPT-5 nano","iq":0,"speed":0,"pricing":0.138,"status":"latest"},
   {"provider":"openai","value":"gpt-oss-120b","name":"gpt-oss-120b (high)","alias":"gpt-oss-120b","iq":0,"speed":3,"pricing":0.261,"status":"latest"},
   {"provider":"openai","value":"gpt-oss-120b-low","name":"gpt-oss-120b (low)","alias":"gpt-oss-120b","iq":0,"speed":3,"pricing":0.249,"status":"latest"},
-  {"provider":"openai","value":"gpt-oss-20b","name":"gpt-oss-20b (high)","alias":"gpt-oss-20b","iq":0,"speed":3,"pricing":0.092,"status":"latest"},
+  {"provider":"openai","value":"gpt-oss-20b","name":"gpt-oss-20b (high)","alias":"gpt-oss-20b","iq":0,"speed":4,"pricing":0.092,"status":"latest"},
   {"provider":"openai","value":"gpt-oss-20b-low","name":"gpt-oss-20b (low)","alias":"gpt-oss-20b","iq":0,"speed":4,"pricing":0.103,"status":"latest"},
   {"provider":"openbmb","value":"minicpm5-2b","name":"MiniCPM5-2B","alias":"MiniCPM5-2B","iq":0,"speed":0,"pricing":0,"status":"preview"},
   {"provider":"perplexity","value":"r1-1776","name":"R1 1776","alias":"R1 1776","iq":0,"speed":0,"pricing":0,"status":"latest"},
