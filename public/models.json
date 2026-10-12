@@ -139,7 +139,7 @@
   {"provider":"openai","value":"gpt-5-2","name":"GPT-5.2","alias":"GPT-5.2","iq":0,"speed":0,"pricing":4.813,"status":"latest"},
   {"provider":"openai","value":"gpt-5-2-codex","name":"GPT-5.2 Codex (Xhigh)","alias":"GPT-5.2 Codex","iq":1,"speed":0,"pricing":4.813,"status":"latest"},
   {"provider":"openai","value":"gpt-5-2-medium","name":"GPT-5.2 (Medium)","alias":"GPT-5.2","iq":1,"speed":0,"pricing":4.813,"status":"latest"},
-  {"provider":"openai","value":"gpt-5-3-codex","name":"GPT-5.3 Codex (Xhigh)","alias":"GPT-5.3 Codex","iq":1,"speed":2,"pricing":4.813,"status":"latest"},
+  {"provider":"openai","value":"gpt-5-3-codex","name":"GPT-5.3 Codex (Xhigh)","alias":"GPT-5.3 Codex","iq":1,"speed":3,"pricing":4.813,"status":"latest"},
   {"provider":"openai","value":"gpt-5-mini","name":"GPT-5 mini (High)","alias":"GPT-5 mini","iq":0,"speed":0,"pricing":0.688,"status":"latest"},
   {"provider":"openai","value":"gpt-5-mini-medium","name":"GPT-5 mini (Medium)","alias":"GPT-5 mini","iq":0,"speed":0,"pricing":0.688,"status":"latest"},
   {"provider":"openai","value":"gpt-5-mini-minimal","name":"GPT-5 mini (Minimal)","alias":"GPT-5 mini","iq":0,"speed":0,"pricing":0.688,"status":"latest"},
