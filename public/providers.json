@@ -29,6 +29,7 @@
   {"value":"openai","name":"OpenAI","keyPlaceholder":"sk-...","website":"https://platform.openai.com/api-keys","status":"latest"},
   {"value":"perplexity","name":"perplexity","status":"latest"},
   {"value":"prime-intellect","name":"prime-intellect","status":"latest"},
+  {"value":"reflection","name":"reflection","status":"latest"},
   {"value":"reka-ai","name":"reka-ai","status":"latest"},
   {"value":"servicenow","name":"servicenow","status":"latest"},
   {"value":"tii-uae","name":"tii-uae","status":"latest"},
