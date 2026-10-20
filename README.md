@@ -1,5 +1,7 @@
 # LLM Registry
 
+> **No longer maintained.** Use [models.dev](https://models.dev) for model information instead. The hosted API at `llm.rettend.me` has been shut down, and registry snapshots are no longer updated. The documentation below is kept for reference and self-hosting.
+
 A lightweight, cache-optimized LLM registry that auto-updates from Artificial Analysis API daily and runs on Cloudflare Workers.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Rettend/llm)
