@@ -1,6 +1,7 @@
 # LLM Registry
 
->[!WARNING] **No longer maintained.** Use [models.dev](https://models.dev), it's just better.
+>[!WARNING]
+> **No longer maintained.** Use [models.dev](https://models.dev), it's just better.
 
 A lightweight, cache-optimized LLM registry that auto-updates from Artificial Analysis API daily and runs on Cloudflare Workers.
 
